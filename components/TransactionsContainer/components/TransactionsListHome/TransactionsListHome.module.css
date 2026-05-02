@@ -1,0 +1,76 @@
+.transactionsListHome {
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-xl);
+  background: var(--color-bg-components);
+  border-radius: var(--radius-md);
+}
+
+.transactionTitle {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.transactionItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  border-bottom: 1px solid var(--color-green);
+  margin-bottom: var(--spacing-lg);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.transactionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.transactionMonth {
+  font-size: var(--font-size-sm);
+  color:var(--color-green);
+}
+
+.transactionInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.transactionInfo .transactionType {
+  font-size: var(--font-size-md);
+  color: var(--color-text);
+}
+
+.transactionInfo .transactionDate {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  opacity: 0.7;
+}
+
+.transactionValueAndDesc {
+  margin-bottom: var(--spacing-sm);
+}
+
+.transactionValueAndDesc .transactionValue,
+.transactionValueAndDesc .transactionDesc {
+  font-size: var(--font-size-md);
+  font-weight: bold;
+  color: var(--color-text);
+}
+
+.transactionValueAndDesc .transactionValue {
+  margin-top: var(--spacing-xs);
+}
+
+.transactionLink {
+  text-align: center;
+  width: 100%;
+  display: inline-block;
+  font-size: var(--font-size-md);
+  color: var(--color-text);
+  border: 1px solid var(--color-text);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+}

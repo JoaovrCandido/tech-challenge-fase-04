@@ -1,0 +1,37 @@
+.header {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm);
+}
+
+.headerTitle {
+    font-size: var(--font-size-xl);
+    @media (max-width: 768px) {
+        padding-left: 11vw;
+    }
+}
+
+.accessibility {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+}
+
+.lightAndDarkImg {
+    cursor: pointer;
+}
+
+.fontSizeImg {
+    cursor: pointer;
+    margin-right: var(--spacing-md);
+}
+
+.buttonIcon {
+    background: transparent;
+    border: none;
+    margin-right: var(--spacing-md);
+    cursor: pointer;
+}

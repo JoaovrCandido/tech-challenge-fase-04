@@ -1,0 +1,25 @@
+{
+  "transaction": [
+    {
+      "id": 1,
+      "type": "deposito",
+      "value": 1000,
+      "date": "2025-10-13",
+      "description": "Depósito em conta"
+    },
+    {
+      "id": 2,
+      "type": "transferencia",
+      "value": 200,
+      "date": "2025-10-14",
+      "description": "Transferência para outra conta"
+    },
+    {
+      "id": 3,
+      "type": "deposito",
+      "value": 100,
+      "date": "2025-10-14",
+      "description": ""
+    }
+  ]
+}

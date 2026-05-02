@@ -1,0 +1,24 @@
+.title {
+  font-size: var(--font-size-xl);
+  color: var(--color-text);
+  font-weight: bold;
+  padding-bottom: 3%;
+}
+
+.containerStatement {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 24px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.boxStatement {
+  grid-column: span 8;
+
+  @media (max-width: 768px) {
+    grid-column: auto;
+  }
+}
