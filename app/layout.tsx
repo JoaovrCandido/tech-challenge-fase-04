@@ -2,16 +2,15 @@ import type { Metadata } from "next";
 import { Inter } from 'next/font/google'
 
 import { AccessibilityProvider } from "@/contexts/AccessibilityProvider";
+import QueryProvider from "@/contexts/QueryProvider";
+import { FeedbackProvider } from "@/contexts/FeedbackContext"; // <-- Novo Import
 import { HeaderContainer } from "@/components/HeaderContainer/HeaderContainer";
 
 import "../styles/globals.css";
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
-  title: "Home",
-  description: "Home - Projeto Financeiro",
-};
+// ... (metadata permanece igual)
 
 export default function RootLayout({
   children,
@@ -21,11 +20,15 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        <AccessibilityProvider>
-          <HeaderContainer />
-
-          <main>{children}</main>
-        </AccessibilityProvider>
+        <QueryProvider>
+          <AccessibilityProvider>
+            {/* Adicionando o Provider de Feedback */}
+            <FeedbackProvider>
+              <HeaderContainer />
+              <main>{children}</main>
+            </FeedbackProvider>
+          </AccessibilityProvider>
+        </QueryProvider>
       </body>
     </html>
   );

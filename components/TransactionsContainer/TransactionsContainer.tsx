@@ -1,20 +1,13 @@
 "use client";
 
 import { useState } from "react";
-
-import useSWR, { mutate } from "swr";
-
-import { Transaction, TransactionType, TransactionInput } from "@/types";
-
-import { sortTransactionsByDate } from "@/utils/transactions";
-
 import { usePathname } from "next/navigation";
 
-import {
-  getTransactions,
-  updateTransaction,
-  deleteTransaction,
-} from "@/lib/api";
+import { Transaction, TransactionType, TransactionInput } from "@/types";
+import { sortTransactionsByDate } from "@/utils/transactions";
+
+import { useGetTransactions, useUpdateTransaction, useDeleteTransaction } from "@/hooks/useTransactions";
+import { useFeedback } from "@/contexts/FeedbackContext"; // <-- Importando nosso hook
 
 import Loading from "../Loading/Loading";
 import TransactionsList from "./components/TransactionsList/TransactionsList";
@@ -22,52 +15,29 @@ import TransactionsListHome from "./components/TransactionsListHome/Transactions
 import Modal from "../Modal/Modal";
 import NewTransaction from "../NewTransaction/NewTransaction";
 import DeleteTransaction from "../DeleteTransaction/DeleteTransaction";
-import SuccessModal from "../SuccessModal/SuccessModal";
-
-const fetcher = () => getTransactions();
 
 const TransactionsContainer = () => {
   const pathname = usePathname();
   const isHome = pathname === "/";
 
-  const {
-    data: transactions,
-    error,
-    isLoading,
-  } = useSWR<Transaction[]>("transactions", fetcher, {
-    refreshInterval: 15000,
-  });
+  const { data: transactions, error, isLoading } = useGetTransactions();
+  const { mutateAsync: updateTx, isPending: isUpdating } = useUpdateTransaction();
+  const { mutateAsync: deleteTx, isPending: isDeleting } = useDeleteTransaction();
+  
+  const { showFeedback } = useFeedback(); // <-- Chamando o hook
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] =
-    useState<Transaction | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [editType, setEditType] = useState<TransactionType>("deposito");
   const [editValue, setEditValue] = useState("");
   const [editDescription, setEditDescription] = useState("");
-  const [isModalSucessOpen, setIsModalSucessOpen] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
-  const [modalTitle, setModalTitle] = useState("Sucesso!");
-
-  const handleEdited = () => {
-    setIsModalSucessOpen(true);
-    setModalTitle("Sucesso!!!");
-    setModalMessage("Transação editada com sucesso!");
-  };
-
-  const handleDeleted = () => {
-    setIsModalSucessOpen(true);
-    setModalTitle("Sucesso!!!");
-    setModalMessage("Transação deletada com sucesso!");
-  };
 
   const handleEditClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     setEditType(transaction.type);
     setEditValue(String(transaction.value));
     setEditDescription(transaction.description || "");
-
     setIsModalOpen(true);
   };
 
@@ -90,66 +60,43 @@ const TransactionsContainer = () => {
   const handleEditSubmit = async () => {
     if (!selectedTransaction) return;
 
-    setIsSubmitting(true);
     try {
       const numericValue = parseFloat(editValue.replace(",", "."));
-
       const updateData: Partial<TransactionInput> = {
         type: editType,
         amount: numericValue,
         description: editDescription,
       };
 
-      await updateTransaction(selectedTransaction.id, updateData);
-
-      mutate("transactions");
+      await updateTx({ id: selectedTransaction.id, data: updateData });
 
       handleCloseModal();
-
-      handleEdited();
+      showFeedback("Sucesso!!!", "Transação editada com sucesso!"); // <-- Usando feedback global
     } catch (err) {
       console.error("Erro ao atualizar transação:", err);
-    } finally {
-      setIsSubmitting(false);
+      showFeedback("Erro!!!", "Ocorreu um erro ao editar a transação.");
     }
-  };
-
-  const handleCancelDeleteSubmit = () => {
-    handleCloseDeleteModal();
   };
 
   const handleDeleteSubmit = async () => {
     if (!selectedTransaction) return;
 
-    setIsSubmitting(true);
     try {
-      await deleteTransaction(selectedTransaction.id);
-
-      mutate("transactions");
-
+      await deleteTx(selectedTransaction.id);
       handleCloseDeleteModal();
-
-      handleDeleted();
+      showFeedback("Sucesso!!!", "Transação deletada com sucesso!"); // <-- Usando feedback global
     } catch (err) {
       console.error("Erro ao deletar transação:", err);
-    } finally {
-      setIsSubmitting(false);
+      showFeedback("Erro!!!", "Ocorreu um erro ao deletar a transação.");
     }
   };
 
-  if (isLoading) {
-    return <Loading />;
-  }
-
-  if (error) {
-    return <p>Ocorreu um erro ao buscar as transações.</p>;
-  }
-
-  if (!transactions) {
-    return <p>Nenhuma transação encontrada.</p>;
-  }
+  if (isLoading) return <Loading />;
+  if (error) return <p>Ocorreu um erro ao buscar as transações.</p>;
+  if (!transactions) return <p>Nenhuma transação encontrada.</p>;
 
   const sortedTransactions = sortTransactionsByDate(transactions);
+  const isSubmitting = isUpdating || isDeleting;
 
   return (
     <>
@@ -184,18 +131,13 @@ const TransactionsContainer = () => {
       <Modal isOpen={isDeleteModalOpen} onClose={handleCloseDeleteModal}>
         <DeleteTransaction
           title="Deseja realmente deletar a transação?"
-          onCancelSubmit={handleCancelDeleteSubmit}
+          onCancelSubmit={handleCloseDeleteModal}
           onDeleteSubmit={handleDeleteSubmit}
           disabled={isSubmitting}
         />
       </Modal>
-
-      <SuccessModal
-        isOpen={isModalSucessOpen}
-        title={modalTitle}
-        onClose={() => setIsModalSucessOpen(false)}
-        message={modalMessage}
-      />
+      
+      {/* O componente SuccessModal foi inteiramente removido daqui! */}
     </>
   );
 };
