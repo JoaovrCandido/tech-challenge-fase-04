@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 
 import { TransactionsListProps } from "@/types";
@@ -11,20 +14,52 @@ import deleteImage from "@/public/delete-icon.png";
 
 import style from "./TransactionsList.module.css";
 
+// Estendemos a sua tipagem original para aceitar as novas funções de scroll infinito
+interface ExtendedProps extends TransactionsListProps {
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+}
+
 const TransactionsList = ({
   transactions,
   title,
   onEditClick,
   onDeleteClick,
-}: TransactionsListProps) => {
+  onLoadMore,
+  hasMore,
+}: ExtendedProps) => {
+  // Referência para o elemento "espião" no final da lista
+  const observerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Se o elemento "espião" aparecer na tela e houver mais itens, carrega mais
+        if (entries[0].isIntersecting && hasMore && onLoadMore) {
+          onLoadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentRef = observerRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) observer.unobserve(currentRef);
+    };
+  }, [hasMore, onLoadMore]);
 
   if (transactions.length === 0) {
-    return <p>Nenhuma transação encontrada.</p>;
+    return <p>Nenhuma transação encontrada para estes filtros.</p>;
   }
 
   return (
     <div className={style.transactionsList}>
       <h1 className={style.transactionsListTitle}>{title}</h1>
+      
       {transactions.map((transaction) => {
         return (
           <div key={transaction.id} className={style.transactionItem}>
@@ -37,9 +72,7 @@ const TransactionsList = ({
                 <button
                   className={style.transactionEdit}
                   onClick={() => onEditClick(transaction)}
-                  aria-label={`Editar transação ${
-                    transaction.description || ""
-                  }`}
+                  aria-label={`Editar transação ${transaction.description || ""}`}
                 >
                   <Image
                     className={style.image}
@@ -53,20 +86,19 @@ const TransactionsList = ({
                 <button
                   className={style.transactionDelete}
                   onClick={() => onDeleteClick(transaction)}
-                  aria-label={`Excluir transação ${
-                    transaction.description || ""
-                  }`}
+                  aria-label={`Excluir transação ${transaction.description || ""}`}
                 >
                   <Image
                     className={style.image}
                     src={deleteImage}
                     width={16}
                     height={16}
-                    alt="Imagem para editar transação"
+                    alt="Imagem para deletar transação"
                   />
                 </button>
               </div>
             </div>
+            
             <div className={style.transactionInfo}>
               <p className={style.transactionType}>
                 {AdjustTypesNames(transaction.type)}
@@ -75,6 +107,7 @@ const TransactionsList = ({
                 {formatDate(transaction.date)}
               </p>
             </div>
+            
             <div className={style.transactionValueAndDesc}>
               <p className={style.transactionDesc}>
                 {transaction.description || ""}
@@ -86,6 +119,13 @@ const TransactionsList = ({
           </div>
         );
       })}
+
+      {/* O nosso elemento "espião". Quando ele entra na tela, o observer detecta. */}
+      {hasMore && (
+        <div ref={observerRef} style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+          Carregando mais transações...
+        </div>
+      )}
     </div>
   );
 };
