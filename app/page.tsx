@@ -24,6 +24,12 @@ const NewTransaction = dynamic(() => import("../components/NewTransaction/NewTra
   ssr: false, // Modais não precisam ser renderizados no servidor, economiza processamento!
 });
 
+// Importando o Dashboard de forma "preguiçosa" para não pesar o carregamento da Home
+const DashboardContainer = dynamic(
+  () => import("@/components/DashboardContainer/DashboardContainer"),
+  { ssr: false }
+);
+
 export default function Home() {
   const [type, setType] = useState<TransactionType>("");
   const [value, setValue] = useState("");
@@ -98,6 +104,11 @@ export default function Home() {
           onSubmit={handleSubmit}
           disabled={isCreating}
         />
+
+        {/* O Dashboard de análise financeira sendo renderizado aqui com Lazy Loading! */}
+        <div style={{ marginTop: "32px", width: "100%" }}>
+          <DashboardContainer />
+        </div>
       </div>
 
       <aside className={style.transactionsPanel}>

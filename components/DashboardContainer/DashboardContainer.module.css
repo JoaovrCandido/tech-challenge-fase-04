@@ -1,0 +1,60 @@
+.dashboardWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.title {
+  font-size: 1.5rem;
+  color: var(--text-color);
+}
+
+.suggestionsCard {
+  background-color: var(--bg-box);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.suggestionsCard h3 {
+  margin-bottom: 12px;
+  color: var(--primary-color);
+}
+
+.suggestionsCard ul {
+  list-style-type: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chartsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 1024px) {
+  .chartsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.chartBox {
+  background-color: var(--bg-box);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chartBox h3 {
+  margin-bottom: 20px;
+  text-align: center;
+  width: 100%;
+  color: var(--text-color);
+}

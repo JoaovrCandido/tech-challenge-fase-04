@@ -11,9 +11,12 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.100.9",
+    "@tanstack/react-query-devtools": "^5.100.9",
     "next": "15.5.5",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "recharts": "^3.8.1",
     "swr": "^2.3.6"
   },
   "devDependencies": {
