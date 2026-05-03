@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { TransactionType } from "@/types";
+import dynamic from "next/dynamic";
 
 import { calculateBalance } from "@/utils/calculateBalance";
 import { formatCurrency, formatDate } from "@/utils/formatters";
@@ -13,11 +14,15 @@ import { useFeedback } from "@/contexts/FeedbackContext"; // <-- Importando noss
 
 import BoxBalance from "@/components/BoxBalance/BoxBalance";
 import Loading from "@/components/Loading/Loading";
-import NewTransaction from "@/components/NewTransaction/NewTransaction";
+// import NewTransaction from "@/components/NewTransaction/NewTransaction";
 import Menu from "@/components/Menu/Menu";
 import TransactionsContainer from "@/components/TransactionsContainer/TransactionsContainer";
 
 import style from "./home.module.css";
+
+const NewTransaction = dynamic(() => import("../components/NewTransaction/NewTransaction"), {
+  ssr: false, // Modais não precisam ser renderizados no servidor, economiza processamento!
+});
 
 export default function Home() {
   const [type, setType] = useState<TransactionType>("");

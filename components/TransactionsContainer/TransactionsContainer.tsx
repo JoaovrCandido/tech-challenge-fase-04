@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import dynamic from "next/dynamic";
 
 import { Transaction, TransactionType, TransactionInput } from "@/types";
 import { sortTransactionsByDate } from "@/utils/transactions";
@@ -13,8 +14,17 @@ import Loading from "../Loading/Loading";
 import TransactionsList from "./components/TransactionsList/TransactionsList";
 import TransactionsListHome from "./components/TransactionsListHome/TransactionsListHome";
 import Modal from "../Modal/Modal";
-import NewTransaction from "../NewTransaction/NewTransaction";
-import DeleteTransaction from "../DeleteTransaction/DeleteTransaction";
+
+// import NewTransaction from "../NewTransaction/NewTransaction";
+// import DeleteTransaction from "../DeleteTransaction/DeleteTransaction";
+
+const NewTransaction = dynamic(() => import("../NewTransaction/NewTransaction"), {
+  ssr: false, // Modais não precisam ser renderizados no servidor, economiza processamento!
+});
+
+const DeleteTransaction = dynamic(() => import("../DeleteTransaction/DeleteTransaction"), {
+  ssr: false,
+});
 
 const TransactionsContainer = () => {
   const pathname = usePathname();

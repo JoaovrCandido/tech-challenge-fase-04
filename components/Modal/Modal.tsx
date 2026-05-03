@@ -1,5 +1,5 @@
+import { Suspense } from 'react';
 import { ModalProps } from '@/types';
-
 import style from './Modal.module.css';
 
 export default function Modal({ isOpen, onClose, children }: ModalProps) {
@@ -13,7 +13,10 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
         <button className={style.closeButton} onClick={onClose}>
           &times;
         </button>
-        {children}
+        {/* O Suspense segura a renderização até o Lazy Loading terminar */}
+        <Suspense fallback={<div style={{ textAlign: 'center', padding: '20px' }}>Carregando formulário...</div>}>
+          {children}
+        </Suspense>
       </div>
     </div>
   );
