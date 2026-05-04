@@ -59,12 +59,16 @@ export default function Home() {
     weekday.charAt(0).toLowerCase() + weekday.slice(1) + ", " + formatted;
 
   const handleSubmit = async () => {
-    if (!type || !value || Number(value) <= 0) {
-      showFeedback("Erro!!!", "Por favor, preencha a transação!"); // <-- Uso simples!
+    // DESFAZ A MÁSCARA: Remove R$, espaços e pontos. Troca a vírgula por ponto.
+    const cleanString = value.replace(/[^\d,-]/g, "").replace(",", ".");
+    const numericAmount = Number(cleanString);
+
+    if (!type || numericAmount <= 0) {
+      showFeedback("Erro!!!", "Por favor, preencha o valor da transação!");
       return;
     }
 
-    if (type == "transferencia" && Number(value) > balance) {
+    if (type == "transferencia" && numericAmount > balance) {
       showFeedback("Erro!!!", "Saldo insuficiente para realizar a transferência!");
       return;
     }
@@ -72,17 +76,17 @@ export default function Home() {
     try {
       await createTx({
         type,
-        amount: Number(value),
+        amount: numericAmount, // Mandamos o número real e seguro para a API
         description,
-        receipt, // <-- NOVO: Envia para a API
+        receipt, 
       });
 
       setType("");
       setValue("");
       setDescription("");
-      setReceipt(""); // <-- NOVO: Limpa o input de anexo
+      setReceipt(""); 
       
-      showFeedback("Sucesso!!!", "Transação realizada com sucesso!"); // <-- Sucesso
+      showFeedback("Sucesso!!!", "Transação realizada com sucesso!");
     } catch (error) {
       console.error("Erro ao enviar a transação:", error);
       showFeedback("Erro!!!", "Erro ao enviar a transação!");

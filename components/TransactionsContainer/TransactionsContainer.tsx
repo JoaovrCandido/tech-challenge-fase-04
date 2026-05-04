@@ -58,7 +58,14 @@ const TransactionsContainer = () => {
   const handleEditClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     setEditType(transaction.type);
-    setEditValue(String(transaction.value));
+    
+    // MÁSCARA NA EDIÇÃO: Formata o valor bruto do banco para exibir na tela
+    const formattedValue = transaction.value.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+    
+    setEditValue(formattedValue);
     setEditDescription(transaction.description || "");
     setIsModalOpen(true);
   };
@@ -83,7 +90,10 @@ const TransactionsContainer = () => {
     if (!selectedTransaction) return;
 
     try {
-      const numericValue = parseFloat(editValue.replace(",", "."));
+      // DESFAZ A MÁSCARA NA EDIÇÃO
+      const cleanString = editValue.replace(/[^\d,-]/g, "").replace(",", ".");
+      const numericValue = Number(cleanString);
+
       const updateData: Partial<TransactionInput> = {
         type: editType,
         amount: numericValue,

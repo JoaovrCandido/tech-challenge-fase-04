@@ -10,29 +10,61 @@ export default function NewTransaction({
   type,
   value,
   description,
-  receipt, // NOVO
+  receipt,
   onTypeChange,
   onValueChange,
   onDescriptionChange,
-  onReceiptChange, // NOVO
+  onReceiptChange,
   onSubmit,
   disabled = false,
 }: NewTransactionProps) {
+  
+  // MÁSCARA MONETÁRIA BRASILEIRA
   const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const apenasNumeros = e.target.value.replace(/[^0-9.,]/g, "");
-    onValueChange(apenasNumeros);
+    // Remove tudo que não for número (impede letras e símbolos)
+    let rawValue = e.target.value.replace(/\D/g, "");
+
+    if (!rawValue) {
+      onValueChange("");
+      return;
+    }
+
+    // Converte para centavos matematicamente
+    const numericValue = parseInt(rawValue, 10) / 100;
+
+    // Formata com R$ e separadores de milhar
+    const formattedValue = numericValue.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+
+    onValueChange(formattedValue);
   };
 
-  // Função que pega o arquivo selecionado e transforma em Base64
+  // VALIDAÇÕES AVANÇADAS DO ARQUIVO
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // 1. Validação de Tamanho (Máximo 5MB)
+      const maxSizeBytes = 5 * 1024 * 1024;
+      if (file.size > maxSizeBytes) {
+        alert("O arquivo é muito grande. O tamanho máximo permitido é 5MB.");
+        e.target.value = ""; // Limpa o input
+        return;
+      }
+
+      // 2. Validação de Tipo
+      const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+      if (!allowedTypes.includes(file.type)) {
+        alert("Formato inválido. Envie apenas imagens (JPG/PNG) ou PDF.");
+        e.target.value = "";
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
-        // Envia a string Base64 gerada para o componente pai
         onReceiptChange(reader.result as string);
       };
-      // Inicia a leitura do arquivo
       reader.readAsDataURL(file);
     }
   };
@@ -57,7 +89,7 @@ export default function NewTransaction({
       <p>Valor</p>
       <input
         type="text"
-        placeholder="10,00"
+        placeholder="R$ 0,00"
         value={value}
         onChange={handleValorChange}
         disabled={disabled}
@@ -67,24 +99,24 @@ export default function NewTransaction({
         type="text"
         placeholder="Descrição (opcional)"
         value={description}
+        maxLength={100} // Limite de caracteres
         onChange={(e) => onDescriptionChange(e.target.value)}
         disabled={disabled}
       />
 
-      {/* NOVO: Input de Arquivo */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '10px', marginBottom: '10px' }}>
         <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-color)' }}>
           Comprovante (Imagem ou PDF)
         </p>
         <input
           type="file"
-          accept="image/*,application/pdf"
+          accept="image/jpeg,image/png,application/pdf"
           onChange={handleFileChange}
           disabled={disabled}
           style={{ fontSize: '14px' }}
         />
         {receipt && (
-          <span style={{ fontSize: '12px', color: 'green' }}>✓ Arquivo anexado pronto para envio</span>
+          <span style={{ fontSize: '12px', color: 'green' }}>✓ Arquivo anexado e validado</span>
         )}
       </div>
 
