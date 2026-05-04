@@ -34,6 +34,7 @@ export default function Home() {
   const [type, setType] = useState<TransactionType>("");
   const [value, setValue] = useState("");
   const [description, setDescription] = useState("");
+  const [receipt, setReceipt] = useState(""); // <-- NOVO ESTADO AQUI
   
   const isMobile = useIsMobile();
   const { showFeedback } = useFeedback(); // <-- Chamando o hook global
@@ -73,11 +74,13 @@ export default function Home() {
         type,
         amount: Number(value),
         description,
+        receipt, // <-- NOVO: Envia para a API
       });
 
       setType("");
       setValue("");
       setDescription("");
+      setReceipt(""); // <-- NOVO: Limpa o input de anexo
       
       showFeedback("Sucesso!!!", "Transação realizada com sucesso!"); // <-- Sucesso
     } catch (error) {
@@ -101,6 +104,7 @@ export default function Home() {
           onTypeChange={setType}
           onValueChange={setValue}
           onDescriptionChange={setDescription}
+          onReceiptChange={setReceipt}
           onSubmit={handleSubmit}
           disabled={isCreating}
         />

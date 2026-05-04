@@ -36,6 +36,7 @@ export async function POST(request: Request) {
       value: newTransactionData.amount,
       date: new Date().toISOString().split('T')[0], // Formato AAAA-MM-DD
       description: newTransactionData.description || '',
+      receipt: newTransactionData.receipt,
     };
 
     db.transaction.push(newTransaction);

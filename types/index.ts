@@ -6,12 +6,14 @@ export interface Transaction {
   value: number;
   date: string; // Formato "AAAA-MM-DD"
   description: string;
+  receipt?: string; // NOVO: string em Base64 da imagem/pdf
 }
 
 export interface TransactionInput {
   type: TransactionType;
   amount: number;
   description?: string;
+  receipt?: string; // NOVO
 }
 
 export interface Database {
@@ -23,9 +25,11 @@ export interface NewTransactionProps {
   type: TransactionType;
   value: string;
   description?: string;
+  receipt?: string; // NOVO
   onTypeChange: (value: TransactionType) => void;
   onValueChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
+  onReceiptChange: (value: string) => void; // NOVO
   onSubmit: () => void;
   disabled?: boolean;
 }

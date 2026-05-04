@@ -33,9 +33,21 @@ const TransactionsListHome = ({ transaction, title }: TransactionsListHomeProps)
               </p>
             </div>
             <div className={style.transactionValueAndDesc}>
-              <p className={style.transactionDesc}>
-                {transaction.description || ""}
-              </p>
+              <div>
+                <p className={style.transactionDesc}>
+                  {transaction.description || ""}
+                </p>
+                {/* Renderização condicional do link de download */}
+                {transaction.receipt && (
+                  <a 
+                    href={transaction.receipt} 
+                    download={`comprovante_transacao_${transaction.id}`}
+                    style={{ fontSize: '12px', color: '#2563eb', textDecoration: 'underline', marginTop: '4px', display: 'inline-block' }}
+                  >
+                    📎 Baixar Comprovante
+                  </a>
+                )}
+              </div>
               <p className={style.transactionValue}>
                 {formatCurrency(transaction.value)}
               </p>

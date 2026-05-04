@@ -10,15 +10,31 @@ export default function NewTransaction({
   type,
   value,
   description,
+  receipt, // NOVO
   onTypeChange,
   onValueChange,
   onDescriptionChange,
+  onReceiptChange, // NOVO
   onSubmit,
   disabled = false,
 }: NewTransactionProps) {
   const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const apenasNumeros = e.target.value.replace(/[^0-9.,]/g, "");
     onValueChange(apenasNumeros);
+  };
+
+  // Função que pega o arquivo selecionado e transforma em Base64
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        // Envia a string Base64 gerada para o componente pai
+        onReceiptChange(reader.result as string);
+      };
+      // Inicia a leitura do arquivo
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -54,6 +70,23 @@ export default function NewTransaction({
         onChange={(e) => onDescriptionChange(e.target.value)}
         disabled={disabled}
       />
+
+      {/* NOVO: Input de Arquivo */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '10px', marginBottom: '10px' }}>
+        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-color)' }}>
+          Comprovante (Imagem ou PDF)
+        </p>
+        <input
+          type="file"
+          accept="image/*,application/pdf"
+          onChange={handleFileChange}
+          disabled={disabled}
+          style={{ fontSize: '14px' }}
+        />
+        {receipt && (
+          <span style={{ fontSize: '12px', color: 'green' }}>✓ Arquivo anexado pronto para envio</span>
+        )}
+      </div>
 
       <button className={style.button} onClick={onSubmit} disabled={disabled}>
         Concluir transação
