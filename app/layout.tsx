@@ -3,14 +3,18 @@ import { Inter } from 'next/font/google'
 
 import { AccessibilityProvider } from "@/contexts/AccessibilityProvider";
 import QueryProvider from "@/contexts/QueryProvider";
-import { FeedbackProvider } from "@/contexts/FeedbackContext"; // <-- Novo Import
+import { FeedbackProvider } from "@/contexts/FeedbackContext";
+import { AuthProvider } from "@/contexts/AuthContext"; // <-- Novo Import
 import { HeaderContainer } from "@/components/HeaderContainer/HeaderContainer";
 
 import "../styles/globals.css";
 
 const inter = Inter({ subsets: ['latin'] })
 
-// ... (metadata permanece igual)
+export const metadata: Metadata = {
+  title: "Home",
+  description: "Home - Projeto Financeiro",
+};
 
 export default function RootLayout({
   children,
@@ -21,13 +25,15 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={inter.className}>
         <QueryProvider>
-          <AccessibilityProvider>
-            {/* Adicionando o Provider de Feedback */}
-            <FeedbackProvider>
-              <HeaderContainer />
-              <main>{children}</main>
-            </FeedbackProvider>
-          </AccessibilityProvider>
+          {/* Adicionando o Provider de Autenticação */}
+          <AuthProvider>
+            <AccessibilityProvider>
+              <FeedbackProvider>
+                <HeaderContainer />
+                <main>{children}</main>
+              </FeedbackProvider>
+            </AccessibilityProvider>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

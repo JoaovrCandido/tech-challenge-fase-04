@@ -1,6 +1,8 @@
+"use function"; // Corrigindo para "use client"
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { TransactionType } from "@/types";
 import dynamic from "next/dynamic";
 
@@ -10,21 +12,20 @@ import { getWeekday } from "@/utils/getWeekday";
 
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useGetTransactions, useCreateTransaction } from "@/hooks/useTransactions";
-import { useFeedback } from "@/contexts/FeedbackContext"; // <-- Importando nosso novo hook
+import { useFeedback } from "@/contexts/FeedbackContext";
+import { useAuth } from "@/contexts/AuthContext"; // <-- Importando o AuthContext
 
 import BoxBalance from "@/components/BoxBalance/BoxBalance";
 import Loading from "@/components/Loading/Loading";
-// import NewTransaction from "@/components/NewTransaction/NewTransaction";
 import Menu from "@/components/Menu/Menu";
 import TransactionsContainer from "@/components/TransactionsContainer/TransactionsContainer";
 
 import style from "./home.module.css";
 
 const NewTransaction = dynamic(() => import("../components/NewTransaction/NewTransaction"), {
-  ssr: false, // Modais não precisam ser renderizados no servidor, economiza processamento!
+  ssr: false,
 });
 
-// Importando o Dashboard de forma "preguiçosa" para não pesar o carregamento da Home
 const DashboardContainer = dynamic(
   () => import("@/components/DashboardContainer/DashboardContainer"),
   { ssr: false }
@@ -34,13 +35,28 @@ export default function Home() {
   const [type, setType] = useState<TransactionType>("");
   const [value, setValue] = useState("");
   const [description, setDescription] = useState("");
-  const [receipt, setReceipt] = useState(""); // <-- NOVO ESTADO AQUI
+  const [receipt, setReceipt] = useState("");
   
   const isMobile = useIsMobile();
-  const { showFeedback } = useFeedback(); // <-- Chamando o hook global
+  const { showFeedback } = useFeedback();
+  
+  // <-- Invocando a Autenticação e Roteamento
+  const { user, loading: authLoading } = useAuth(); 
+  const router = useRouter();
 
   const { data: transactions, error, isLoading } = useGetTransactions();
   const { mutateAsync: createTx, isPending: isCreating } = useCreateTransaction();
+
+  // <-- Lógica de redirecionamento para quem não tem login
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login");
+    }
+  }, [user, authLoading, router]);
+
+  // <-- Telas de carregamento e bloqueio (Importante respeitar a ordem!)
+  if (authLoading) return <Loading />;
+  if (!user) return null; // Evita piscar a tela da Home antes do redirecionamento
 
   if (error) return <div>Falha ao carregar...</div>;
   if (isLoading || !transactions) return <Loading />;
@@ -59,7 +75,6 @@ export default function Home() {
     weekday.charAt(0).toLowerCase() + weekday.slice(1) + ", " + formatted;
 
   const handleSubmit = async () => {
-    // DESFAZ A MÁSCARA: Remove R$, espaços e pontos. Troca a vírgula por ponto.
     const cleanString = value.replace(/[^\d,-]/g, "").replace(",", ".");
     const numericAmount = Number(cleanString);
 
@@ -76,7 +91,7 @@ export default function Home() {
     try {
       await createTx({
         type,
-        amount: numericAmount, // Mandamos o número real e seguro para a API
+        amount: numericAmount,
         description,
         receipt, 
       });
@@ -105,6 +120,7 @@ export default function Home() {
           type={type}
           value={value}
           description={description}
+          receipt={receipt}
           onTypeChange={setType}
           onValueChange={setValue}
           onDescriptionChange={setDescription}
@@ -113,7 +129,6 @@ export default function Home() {
           disabled={isCreating}
         />
 
-        {/* O Dashboard de análise financeira sendo renderizado aqui com Lazy Loading! */}
         <div style={{ marginTop: "32px", width: "100%" }}>
           <DashboardContainer />
         </div>

@@ -1,79 +1,85 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTransactions, createTransaction, updateTransaction, deleteTransaction } from "@/lib/api";
 import { Transaction, TransactionInput } from "@/types";
+import { useAuth } from "@/contexts/AuthContext"; // <-- Importando o AuthContext
 
 export function useGetTransactions() {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ["transactions"],
-    queryFn: getTransactions,
+    // O cache agora é atrelado ao usuário. Se deslogar e outra pessoa logar, o cache reinicia.
+    queryKey: ["transactions", user?.uid],
+    queryFn: () => getTransactions(user!.uid),
+    enabled: !!user?.uid, // Só tenta buscar na API se o usuário estiver de fato logado
     refetchInterval: 15000, 
   });
 }
 
 export function useCreateTransaction() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   
   return useMutation({
-    mutationFn: (data: TransactionInput) => createTransaction(data),
+    mutationFn: (data: TransactionInput) => createTransaction(data, user!.uid),
     
-    // 1. Ocorre imediatamente quando o botão é clicado
     onMutate: async (newTxData) => {
-      // Cancela requisições GET em andamento para que não sobrescrevam a nossa alteração otimista
-      await queryClient.cancelQueries({ queryKey: ["transactions"] });
+      if (!user?.uid) return;
+      
+      await queryClient.cancelQueries({ queryKey: ["transactions", user.uid] });
+      const previousTransactions = queryClient.getQueryData<Transaction[]>(["transactions", user.uid]);
 
-      // Guarda um "snapshot" dos dados antigos para caso a API retorne erro
-      const previousTransactions = queryClient.getQueryData<Transaction[]>(["transactions"]);
-
-      // Atualiza o cache imediatamente (Programação Reativa)
-      queryClient.setQueryData<Transaction[]>(["transactions"], (oldData) => {
+      queryClient.setQueryData<Transaction[]>(["transactions", user.uid], (oldData) => {
         const optimisticTransaction: Transaction = {
-          id: Math.random(), // ID provisório apenas para exibição visual
+          id: Math.random().toString(), // ID provisório como string para bater com o Firebase
           date: new Date().toISOString().split('T')[0],
           type: newTxData.type,
-          value: newTxData.amount, // Ajuste do nome da propriedade
+          value: newTxData.amount, 
           description: newTxData.description || "",
+          receipt: newTxData.receipt || "",
         };
         return oldData ? [...oldData, optimisticTransaction] : [optimisticTransaction];
       });
 
-      // Retorna o snapshot para ser usado no onError, se necessário
       return { previousTransactions };
     },
 
-    // 2. Se a API retornar erro, desfazemos a alteração visual
     onError: (err, newTxData, context) => {
-      if (context?.previousTransactions) {
-        queryClient.setQueryData(["transactions"], context.previousTransactions);
+      if (context?.previousTransactions && user?.uid) {
+        queryClient.setQueryData(["transactions", user.uid], context.previousTransactions);
       }
     },
 
-    // 3. Sempre executa no final (sucesso ou erro) para garantir a sincronia com o banco de dados real
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      if (user?.uid) {
+        queryClient.invalidateQueries({ queryKey: ["transactions", user.uid] });
+      }
     },
   });
 }
 
 export function useUpdateTransaction() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<TransactionInput> }) => updateTransaction(id, data),
+    mutationFn: ({ id, data }: { id: string | number; data: Partial<TransactionInput> }) => updateTransaction(id, data),
     
     onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: ["transactions"] });
-      const previousTransactions = queryClient.getQueryData<Transaction[]>(["transactions"]);
+      if (!user?.uid) return;
+      
+      await queryClient.cancelQueries({ queryKey: ["transactions", user.uid] });
+      const previousTransactions = queryClient.getQueryData<Transaction[]>(["transactions", user.uid]);
 
-      queryClient.setQueryData<Transaction[]>(["transactions"], (oldData) => {
+      queryClient.setQueryData<Transaction[]>(["transactions", user.uid], (oldData) => {
         if (!oldData) return [];
         return oldData.map((t) => {
           if (t.id === id) {
-            // Mescla os dados antigos com os dados novos otimistas
             return {
               ...t,
               type: data.type !== undefined ? data.type : t.type,
               value: data.amount !== undefined ? data.amount : t.value,
               description: data.description !== undefined ? data.description : t.description,
+              receipt: data.receipt !== undefined ? data.receipt : t.receipt,
             };
           }
           return t;
@@ -84,30 +90,34 @@ export function useUpdateTransaction() {
     },
 
     onError: (err, variables, context) => {
-      if (context?.previousTransactions) {
-        queryClient.setQueryData(["transactions"], context.previousTransactions);
+      if (context?.previousTransactions && user?.uid) {
+        queryClient.setQueryData(["transactions", user.uid], context.previousTransactions);
       }
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      if (user?.uid) {
+        queryClient.invalidateQueries({ queryKey: ["transactions", user.uid] });
+      }
     },
   });
 }
 
 export function useDeleteTransaction() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   
   return useMutation({
-    mutationFn: (id: number) => deleteTransaction(id),
+    mutationFn: (id: string | number) => deleteTransaction(id),
     
     onMutate: async (deletedId) => {
-      await queryClient.cancelQueries({ queryKey: ["transactions"] });
-      const previousTransactions = queryClient.getQueryData<Transaction[]>(["transactions"]);
+      if (!user?.uid) return;
+      
+      await queryClient.cancelQueries({ queryKey: ["transactions", user.uid] });
+      const previousTransactions = queryClient.getQueryData<Transaction[]>(["transactions", user.uid]);
 
-      queryClient.setQueryData<Transaction[]>(["transactions"], (oldData) => {
+      queryClient.setQueryData<Transaction[]>(["transactions", user.uid], (oldData) => {
         if (!oldData) return [];
-        // Filtra e remove imediatamente a transação do cache e da tela
         return oldData.filter((t) => t.id !== deletedId);
       });
 
@@ -115,13 +125,15 @@ export function useDeleteTransaction() {
     },
     
     onError: (err, deletedId, context) => {
-      if (context?.previousTransactions) {
-        queryClient.setQueryData(["transactions"], context.previousTransactions);
+      if (context?.previousTransactions && user?.uid) {
+        queryClient.setQueryData(["transactions", user.uid], context.previousTransactions);
       }
     },
     
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      if (user?.uid) {
+        queryClient.invalidateQueries({ queryKey: ["transactions", user.uid] });
+      }
     },
   });
 }

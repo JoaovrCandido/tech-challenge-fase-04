@@ -1,71 +1,85 @@
 import { Transaction, TransactionInput } from "@/types";
+import { db } from "@/lib/firebase";
+import { 
+  collection, 
+  getDocs, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  query, 
+  where 
+} from "firebase/firestore";
 
-const API_URL = "http://localhost:3000";
+// Referência para a coleção "transactions" no Firestore
+const transactionsCollection = collection(db, "transactions");
 
-async function handleApiResponse(response: Response) {
-  if (response.ok) {
-    if (response.status === 204) {
-      return;
-    }
-    return response.json();
-  }
+export async function getTransactions(userId: string): Promise<Transaction[]> {
+  if (!userId) throw new Error("Usuário não autenticado");
 
-  try {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Ocorreu um erro na API");
-  } catch (e: unknown) {
-    let errorMessage = `Erro ${response.status}: ${response.statusText}`;
+  // Busca APENAS as transações onde o campo userId seja igual ao usuário logado
+  const q = query(transactionsCollection, where("userId", "==", userId));
+  const querySnapshot = await getDocs(q);
 
-    if (e instanceof Error) {
-      errorMessage = e.message;
-    }
-
-    throw new Error(errorMessage);
-  }
-}
-
-export async function getTransactions(): Promise<Transaction[]> {
-  const response = await fetch(`${API_URL}/api/transactions`, {
-    cache: "no-store",
+  const transactions: Transaction[] = [];
+  
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+    transactions.push({
+      id: doc.id, // O ID gerado pelo Firebase
+      type: data.type,
+      value: data.value,
+      date: data.date,
+      description: data.description || "",
+      receipt: data.receipt || "",
+    });
   });
-  return handleApiResponse(response);
+
+  return transactions;
 }
 
 export async function createTransaction(
-  newTransaction: TransactionInput
+  newTransaction: TransactionInput,
+  userId: string
 ): Promise<Transaction> {
-  const response = await fetch(`${API_URL}/api/transactions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(newTransaction),
-  });
+  if (!userId) throw new Error("Usuário não autenticado");
 
-  return handleApiResponse(response);
+  const txData = {
+    userId, // <-- CRÍTICO: Atrelando o dado ao dono!
+    type: newTransaction.type,
+    value: newTransaction.amount,
+    date: new Date().toISOString().split('T')[0],
+    description: newTransaction.description || "",
+    receipt: newTransaction.receipt || "",
+  };
+
+  // Salva no banco de dados e pega a referência do documento criado
+  const docRef = await addDoc(transactionsCollection, txData);
+
+  return {
+    id: docRef.id,
+    ...txData,
+  };
 }
 
 export async function updateTransaction(
-  id: number,
+  id: string | number,
   updateData: Partial<TransactionInput>
-): Promise<Transaction> {
-  const response = await fetch(`${API_URL}/api/transactions/${id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updateData),
-  });
+): Promise<void> {
+  // Encontra o documento exato pelo ID
+  const docRef = doc(db, "transactions", id.toString());
 
-  return handleApiResponse(response);
+  // Mapeia os dados do formato de Input para o formato do Banco
+  const mappedData: any = {};
+  if (updateData.type !== undefined) mappedData.type = updateData.type;
+  if (updateData.amount !== undefined) mappedData.value = updateData.amount;
+  if (updateData.description !== undefined) mappedData.description = updateData.description;
+  if (updateData.receipt !== undefined) mappedData.receipt = updateData.receipt;
+
+  await updateDoc(docRef, mappedData);
 }
 
-export async function deleteTransaction(
-  id: number
-): Promise<{ message: string }> {
-  const response = await fetch(`${API_URL}/api/transactions/${id}`, {
-    method: "DELETE",
-  });
-
-  return handleApiResponse(response);
+export async function deleteTransaction(id: string | number): Promise<void> {
+  const docRef = doc(db, "transactions", id.toString());
+  await deleteDoc(docRef);
 }

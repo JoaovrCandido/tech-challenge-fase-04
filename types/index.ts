@@ -1,7 +1,7 @@
 export type TransactionType = "deposito" | "transferencia" | "";
 
 export interface Transaction {
-  id: number;
+  id: string | number;
   type: TransactionType;
   value: number;
   date: string; // Formato "AAAA-MM-DD"
