@@ -68,3 +68,26 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+.fileInputContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.fileInputContainer .fileInputLabel {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.fileInputContainer .fileInput {
+    font-size: 14px;
+}
+
+.fileInputFeedback {
+    font-size: 12px;
+    color: green;
+}

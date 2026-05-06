@@ -42,7 +42,7 @@ const TransactionsListHome = ({ transaction, title }: TransactionsListHomeProps)
                   <a 
                     href={transaction.receipt} 
                     download={`comprovante_transacao_${transaction.id}`}
-                    style={{ fontSize: '12px', color: '#2563eb', textDecoration: 'underline', marginTop: '4px', display: 'inline-block' }}
+                    className={style.downloadLink}
                   >
                     Baixar Comprovante
                   </a>

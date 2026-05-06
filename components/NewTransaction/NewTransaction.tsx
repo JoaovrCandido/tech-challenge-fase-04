@@ -104,8 +104,8 @@ export default function NewTransaction({
         disabled={disabled}
       />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '10px', marginBottom: '10px' }}>
-        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-color)' }}>
+      <div className={style.fileInputContainer}>
+        <p className={style.fileInputLabel}>
           Comprovante (Imagem ou PDF)
         </p>
         <input
@@ -113,10 +113,10 @@ export default function NewTransaction({
           accept="image/jpeg,image/png,application/pdf"
           onChange={handleFileChange}
           disabled={disabled}
-          style={{ fontSize: '14px' }}
+          className={style.fileInput}
         />
         {receipt && (
-          <span style={{ fontSize: '12px', color: 'green' }}>✓ Arquivo anexado e validado</span>
+          <span className={style.fileInputFeedback}>✓ Arquivo anexado e validado</span>
         )}
       </div>
 

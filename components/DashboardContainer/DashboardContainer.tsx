@@ -185,7 +185,9 @@ export default function DashboardContainer() {
                 style={{ width: `${Math.min(Math.max(savingsProgress, 0), 100)}%` }}
               ></div>
             </div>
-            <span style={{ fontSize: '12px', marginTop: '8px' }}>
+            <span
+            className={style.savingsProgressText}
+            >
               {Math.min(Math.max(savingsProgress, 0), 100).toFixed(1)}% concluído
             </span>
           </div>
@@ -207,7 +209,9 @@ export default function DashboardContainer() {
         {prefs.showPieChart && (
           <div className={style.chartBox}>
             <h3>Resumo Geral</h3>
-            <div style={{ width: "100%", height: 250 }}>
+            <div
+            className={style.pieChartContainer}
+            >
               <ResponsiveContainer>
                 <PieChart>
                   <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value">
@@ -227,7 +231,9 @@ export default function DashboardContainer() {
         {prefs.showBarChart && (
           <div className={style.chartBox}>
             <h3>Evolução Mensal</h3>
-            <div style={{ width: "100%", height: 250 }}>
+            <div
+            className={style.pieChartContainer}
+            >
               <ResponsiveContainer>
                 <BarChart data={barData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.2} />

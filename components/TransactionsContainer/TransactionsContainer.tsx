@@ -15,6 +15,8 @@ import TransactionsList from "./components/TransactionsList/TransactionsList";
 import TransactionsListHome from "./components/TransactionsListHome/TransactionsListHome";
 import Modal from "../Modal/Modal";
 
+import style from "./TransactionContainer.module.css";
+
 const NewTransaction = dynamic(() => import("../NewTransaction/NewTransaction"), {
   ssr: false, // Modais não precisam ser renderizados no servidor, economiza processamento!
 });
@@ -166,45 +168,49 @@ const TransactionsContainer = () => {
           transaction={sortTransactionsByDate(transactions).slice(0, 3)}
         />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div className={style.container}>
           
           {/* UI DO FILTRO AVANÇADO */}
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '15px', backgroundColor: 'var(--bg-box)', borderRadius: '8px' }}>
+          <div className={style.filterContainer}>
             <input 
               type="text" 
               placeholder="Buscar por descrição..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ flex: 1, minWidth: '200px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              className={style.searchInput}
             />
             
             <select 
               value={filterType} 
               onChange={(e) => setFilterType(e.target.value as TransactionType | "todos")}
-              style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              className={style.selectInput}
             >
               <option value="todos">Todos os tipos</option>
               <option value="deposito">Depósitos</option>
               <option value="transferencia">Transferências</option>
             </select>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ fontSize: '14px' }}>De:</span>
+            <div
+            className={style.dateFilterContainer}
+            >
+              <span className={style.dateFilterLabel}>
+                De:
+              </span>
               <input 
                 type="date" 
                 value={startDate} 
                 onChange={(e) => setStartDate(e.target.value)} 
-                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                className={style.dateInput}
               />
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ fontSize: '14px' }}>Até:</span>
+            <div className={style.dateFilterContainer}>
+              <span className={style.dateFilterLabel}>Até:</span>
               <input 
                 type="date" 
                 value={endDate} 
                 onChange={(e) => setEndDate(e.target.value)} 
-                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                className={style.dateInput}
               />
             </div>
           </div>

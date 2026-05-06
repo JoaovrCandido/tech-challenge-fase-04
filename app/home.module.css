@@ -68,3 +68,8 @@
 .errorPage button:hover {
   opacity: 0.9;
 }
+
+.dashboardContainer {
+  margin-top: 32px;
+  width: 100%;
+}

@@ -55,3 +55,8 @@
     opacity: 1;
   }
 }
+
+.fallBack {
+  text-align: center;
+  padding: 20px;
+}

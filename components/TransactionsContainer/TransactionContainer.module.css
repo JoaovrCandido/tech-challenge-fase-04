@@ -1,0 +1,44 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.filterContainer {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 15px;
+    background-color: var(--bg-box);
+    border-radius: 8px;
+}
+
+.searchInput {
+    flex: 1;
+    min-width: 200px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.selectInput {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.dateFilterContainer {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dateFilterLabel {
+    font-size: 14px;
+}
+
+.dateInput {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}

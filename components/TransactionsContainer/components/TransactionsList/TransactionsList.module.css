@@ -106,3 +106,17 @@
   border-color: var(--color-danger);
   color: white;
 }
+
+.downloadLink {
+  font-size: 12px;
+  color: #2563eb;
+  text-decoration: underline;
+  margin-top: 4px;
+  display: inline-block;
+}
+
+.loadingIndicator {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}

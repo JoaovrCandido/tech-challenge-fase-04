@@ -129,7 +129,7 @@ export default function Home() {
           disabled={isCreating}
         />
 
-        <div style={{ marginTop: "32px", width: "100%" }}>
+        <div className={style.dashboardContainer}>
           <DashboardContainer />
         </div>
       </div>

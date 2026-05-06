@@ -118,7 +118,7 @@ const TransactionsList = ({
                   <a 
                     href={transaction.receipt} 
                     download={`comprovante_transacao_${transaction.id}`}
-                    style={{ fontSize: '12px', color: '#2563eb', textDecoration: 'underline', marginTop: '4px', display: 'inline-block' }}
+                    className={style.downloadLink}
                   >
                     Baixar Comprovante
                   </a>
@@ -134,7 +134,7 @@ const TransactionsList = ({
 
       {/* O nosso elemento "espião". Quando ele entra na tela, o observer detecta. */}
       {hasMore && (
-        <div ref={observerRef} style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+        <div ref={observerRef} className={style.loadingIndicator}>
           Carregando mais transações...
         </div>
       )}
