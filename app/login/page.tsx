@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword 
-} from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { authService } from "@/infrastructure/auth/FirebaseAuthService";
 
 import style from "./login.module.css";
 
@@ -26,11 +22,9 @@ export default function Login() {
 
     try {
       if (isLogin) {
-        // Tenta logar o usuário
-        await signInWithEmailAndPassword(auth, email, password);
+        await authService.login(email, password);
       } else {
-        // Tenta criar um novo usuário
-        await createUserWithEmailAndPassword(auth, email, password);
+        await authService.register(email, password);
       }
       
       // Se der tudo certo, manda o usuário para a Home (Dashboard)

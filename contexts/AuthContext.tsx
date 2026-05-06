@@ -1,26 +1,23 @@
 "use client";
-
 import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase"; // O arquivo que você acabou de criar!
+// ---> IMPORT DO NOSSO SERVIÇO LIMPO <---
+import { authService } from "@/infrastructure/auth/FirebaseAuthService";
+import { UserData } from "@/core/domain/services/IAuthService";
 
 interface AuthContextType {
-  user: User | null;
+  user: UserData | null;
   loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-});
+const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // O Firebase fica "escutando" se o usuário logou ou deslogou
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    // O Context não sabe que é Firebase, só passa o callback
+    const unsubscribe = authService.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
@@ -35,5 +32,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Hook personalizado para usar em qualquer lugar do app
 export const useAuth = () => useContext(AuthContext);

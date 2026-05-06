@@ -4,8 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { authService } from "@/infrastructure/auth/FirebaseAuthService";
 
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { MenuItem } from "@/types";
@@ -33,9 +32,9 @@ export default function Menu() {
   const closeMenu = () => setOpen(false);
 
   // Logout seguro: Desloga, limpa o cache da memória e redireciona
-  const handleLogout = async () => {
+ const handleLogout = async () => {
     try {
-      await signOut(auth);
+      await authService.logout(); // <-- Sem menção ao Firebase
       queryClient.clear(); 
       router.push("/login");
       closeMenu();
