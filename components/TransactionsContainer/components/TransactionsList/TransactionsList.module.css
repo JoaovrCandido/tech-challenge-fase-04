@@ -1,26 +1,32 @@
 .transactionsList {
-  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-xl);
-  background: var(--color-bg-components);
+  padding: var(--spacing-xl);
+  background: var(--color-bg-box);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
 }
 
 .transactionsListTitle {
   font-size: var(--font-size-xl);
   color: var(--color-text);
-  font-weight: bold;
-  padding-bottom: var(--spacing-lg);
+  font-weight: 700;
+  margin-bottom: var(--spacing-lg);
+  letter-spacing: -0.5px;
 }
 
 .transactionItem {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
-  border-bottom: 1px solid var(--color-green);
-  margin-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
 
-  &:last-child {
-    margin-bottom: 0;
-  }
+.transactionItem:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 .transactionHeader {
@@ -31,7 +37,8 @@
 
 .transactionMonth {
   font-size: var(--font-size-sm);
-  color: var(--color-green);
+  font-weight: 600;
+  color: var(--color-muted);
 }
 
 .transactionInfo {
@@ -41,50 +48,61 @@
 }
 
 .transactionInfo .transactionType {
-  font-size: var(--font-size-md);
-  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+  text-transform: capitalize;
 }
 
 .transactionInfo .transactionDate {
   font-size: var(--font-size-sm);
-  color: var(--color-text);
-  opacity: 0.7;
+  color: var(--color-muted);
 }
 
 .transactionValueAndDesc {
-  margin-bottom: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
 }
 
-.transactionValueAndDesc .transactionValue,
-.transactionValueAndDesc .transactionDesc {
+.transactionDesc {
   font-size: var(--font-size-md);
-  font-weight: bold;
   color: var(--color-text);
+  font-weight: 500;
 }
 
-.transactionValueAndDesc .transactionValue {
-  margin-top: var(--spacing-xs);
+.transactionValue {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  margin-top: 4px;
 }
 
 .transactionActions {
   display: flex;
   align-items: center;
-}
-
-.transactionEdit {
-  margin-right: var(--spacing-sm);
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
 }
 
 .transactionEdit,
 .transactionDelete {
   background-color: var(--color-primary);
-  border-radius: 100%;
-  padding: 8px;
-  border: 0;
-  height: 32px;
-  width: 32px;
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  border: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.transactionEdit:hover {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+.transactionDelete:hover {
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
+  color: white;
 }

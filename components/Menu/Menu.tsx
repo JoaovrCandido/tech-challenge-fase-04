@@ -79,8 +79,7 @@ export default function Menu() {
         {/* NOVO: Botão de Sair com cor de alerta */}
         <li 
           className={style.menuItem} 
-          onClick={handleLogout} 
-          style={{ cursor: "pointer", marginTop: "10px" }}
+          onClick={handleLogout}
         >
           <span style={{ color: "#ef4444", fontWeight: "bold" }}>Sair</span>
         </li>

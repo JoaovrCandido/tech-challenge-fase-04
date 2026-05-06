@@ -1,56 +1,40 @@
-.title {
-  color: var(--black);
-}
-
-.pageContainer{
-  display:flex;
+.pageContainer {
+  display: flex;
 }
 
 .layout {
   display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 24px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: repeat(12, 1fr); /* 12 colunas oferece mais flexibilidade */
+  gap: 32px; /* Respiro maior entre as colunas */
+  align-items: start;
 }
 
 .mainContent {
-  grid-column: span 5;
-
-  @media (max-width: 768px) {
-    grid-column: auto;
-  }
-}
-
-.transactionLink {
-  grid-column: span 3;
-
-  @media (max-width: 768px) {
-    grid-column: auto;
-  }
+  grid-column: span 6;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .transactionsPanel {
-  border-radius: 8px;
-  grid-column: span 3;
+  grid-column: span 4;
+}
 
-  @media (max-width: 768px) {
-    grid-column: auto;
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 24px;
+  }
+  
+  .mainContent,
+  .transactionsPanel {
+    grid-column: span 1;
   }
 }
 
-.loadingPage {
-  height: 80vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
+.loadingPage,
 .errorPage {
-  height: 80vh;
+  height: 70vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -60,21 +44,27 @@
 
 .errorPage h1 {
   font-size: var(--font-size-xl);
-  color: var(--color-text);
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-sm);
 }
 
 .errorPage p {
   font-size: var(--font-size-md);
-  color: var(--color-text);
-  margin-top: var(--spacing-sm);
+  color: var(--color-muted);
 }
 
 .errorPage button {
-  margin-top: 20px;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: 4px;
-  border: 1px solid var(--color-text);
-  background-color: var(--color-bg);
+  margin-top: 24px;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background-color: var(--color-accent);
+  color: white;
+  font-weight: 600;
   cursor: pointer;
-  color: var(--color-text);
+  transition: opacity 0.2s ease;
+}
+
+.errorPage button:hover {
+  opacity: 0.9;
 }

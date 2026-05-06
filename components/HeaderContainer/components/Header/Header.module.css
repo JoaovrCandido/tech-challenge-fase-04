@@ -1,37 +1,51 @@
 .header {
     background-color: var(--color-primary);
-    color: var(--color-white);
+    color: #fff;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--spacing-sm);
+    padding: 16px 32px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 30;
 }
 
 .headerTitle {
-    font-size: var(--font-size-xl);
-    @media (max-width: 768px) {
-        padding-left: 11vw;
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+@media (max-width: 1024px) {
+    .header {
+        padding: 16px;
     }
 }
 
 .accessibility {
     display: flex;
     align-items: center;
-    justify-content: end;
+    justify-content: flex-end;
+    gap: var(--spacing-md);
 }
 
-.lightAndDarkImg {
-    cursor: pointer;
-}
-
-.fontSizeImg {
-    cursor: pointer;
-    margin-right: var(--spacing-md);
-}
-
+.lightAndDarkImg,
+.fontSizeImg,
 .buttonIcon {
+    cursor: pointer;
     background: transparent;
     border: none;
-    margin-right: var(--spacing-md);
-    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.buttonIcon:hover,
+.lightAndDarkImg:hover,
+.fontSizeImg:hover {
+    opacity: 1;
+    transform: scale(1.05);
 }

@@ -1,24 +1,26 @@
 .title {
   font-size: var(--font-size-xl);
   color: var(--color-text);
-  font-weight: bold;
-  padding-bottom: 3%;
+  font-weight: 700;
+  padding-bottom: var(--spacing-lg);
+  letter-spacing: -0.5px;
 }
 
 .containerStatement {
   display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(12, 1fr); /* Atualizado para 12 colunas */
+  gap: 32px;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     grid-template-columns: 1fr;
+    gap: 24px;
   }
 }
 
 .boxStatement {
-  grid-column: span 8;
+  grid-column: span 10; /* Acompanha o menu que ocupa as colunas restantes */
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     grid-column: auto;
   }
 }

@@ -44,7 +44,7 @@ const TransactionsListHome = ({ transaction, title }: TransactionsListHomeProps)
                     download={`comprovante_transacao_${transaction.id}`}
                     style={{ fontSize: '12px', color: '#2563eb', textDecoration: 'underline', marginTop: '4px', display: 'inline-block' }}
                   >
-                    📎 Baixar Comprovante
+                    Baixar Comprovante
                   </a>
                 )}
               </div>

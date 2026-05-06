@@ -4,28 +4,54 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(15, 23, 42, 0.6); /* Slate com transparência */
+  backdrop-filter: blur(4px); /* Efeito de vidro fosco */
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 20px; /* Evita que o modal encoste nas bordas no celular */
 }
 
 .content {
-  background-color: var(--color-bg);
-  padding: 20px;
-  border-radius: 8px;
+  background-color: var(--color-bg-box);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-md);
   position: relative;
   z-index: 1001;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+  animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .closeButton {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 16px;
+  right: 16px;
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: var(--color-text);
+  color: var(--color-muted);
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  color: var(--color-danger);
+}
+
+@keyframes modalFadeIn {
+  from {
+    transform: translateY(10px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
