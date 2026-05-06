@@ -1,35 +1,15 @@
-export type TransactionType = "deposito" | "transferencia" | "";
-
-export interface Transaction {
-  id: string | number;
-  type: TransactionType;
-  value: number;
-  date: string; // Formato "AAAA-MM-DD"
-  description: string;
-  receipt?: string; // NOVO: string em Base64 da imagem/pdf
-}
-
-export interface TransactionInput {
-  type: TransactionType;
-  amount: number;
-  description?: string;
-  receipt?: string; // NOVO
-}
-
-export interface Database {
-  transaction: Transaction[];
-}
+import { Transaction, TransactionType } from "@/core/domain/entities/Transaction";
 
 export interface NewTransactionProps {
   title: string;
-  type: TransactionType;
+  type: TransactionType | "";
   value: string;
   description?: string;
-  receipt?: string; // NOVO
-  onTypeChange: (value: TransactionType) => void;
+  receipt?: string;
+  onTypeChange: (value: TransactionType | "") => void;
   onValueChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
-  onReceiptChange: (value: string) => void; // NOVO
+  onReceiptChange: (value: string) => void;
   onSubmit: () => void;
   disabled?: boolean;
 }
@@ -69,14 +49,14 @@ export interface AccessibilityContextType {
 
 export interface TransactionsListProps {
   transactions: Transaction[];
-  title: string
+  title: string;
   onEditClick: (transaction: Transaction) => void;
-  onDeleteClick: (transation: Transaction) => void;
+  onDeleteClick: (transaction: Transaction) => void;
 }
 
 export interface TransactionsListHomeProps {
   transaction: Transaction[];
-  title: string
+  title: string;
 }
 
 export interface ModalProps {

@@ -1,16 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getTransactions, createTransaction, updateTransaction, deleteTransaction } from "@/lib/api";
-import { Transaction, TransactionInput } from "@/types";
-import { useAuth } from "@/contexts/AuthContext"; // <-- Importando o AuthContext
+import { useAuth } from "@/contexts/AuthContext";
+
+// ---> IMPORTANDO DA NOSSA NOVA ARQUITETURA LIMPA <---
+import { transactionsRepository } from "@/infrastructure/database/FirebaseTransactionsRepository";
+import { Transaction } from "@/core/domain/entities/Transaction";
+import { TransactionInput } from "@/core/domain/repositories/ITransactionsRepository";
 
 export function useGetTransactions() {
   const { user } = useAuth();
 
   return useQuery({
-    // O cache agora é atrelado ao usuário. Se deslogar e outra pessoa logar, o cache reinicia.
     queryKey: ["transactions", user?.uid],
-    queryFn: () => getTransactions(user!.uid),
-    enabled: !!user?.uid, // Só tenta buscar na API se o usuário estiver de fato logado
+    // Delega a busca para o Repositório de Infraestrutura
+    queryFn: () => transactionsRepository.getTransactions(user!.uid),
+    enabled: !!user?.uid, 
     refetchInterval: 15000, 
   });
 }
@@ -20,7 +23,8 @@ export function useCreateTransaction() {
   const { user } = useAuth();
   
   return useMutation({
-    mutationFn: (data: TransactionInput) => createTransaction(data, user!.uid),
+    // Delega a criação para o Repositório
+    mutationFn: (data: TransactionInput) => transactionsRepository.createTransaction(data, user!.uid),
     
     onMutate: async (newTxData) => {
       if (!user?.uid) return;
@@ -30,7 +34,7 @@ export function useCreateTransaction() {
 
       queryClient.setQueryData<Transaction[]>(["transactions", user.uid], (oldData) => {
         const optimisticTransaction: Transaction = {
-          id: Math.random().toString(), // ID provisório como string para bater com o Firebase
+          id: Math.random().toString(), 
           date: new Date().toISOString().split('T')[0],
           type: newTxData.type,
           value: newTxData.amount, 
@@ -62,7 +66,9 @@ export function useUpdateTransaction() {
   const { user } = useAuth();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string | number; data: Partial<TransactionInput> }) => updateTransaction(id, data),
+    // Delega a atualização para o Repositório
+    mutationFn: ({ id, data }: { id: string | number; data: Partial<TransactionInput> }) => 
+      transactionsRepository.updateTransaction(id, data),
     
     onMutate: async ({ id, data }) => {
       if (!user?.uid) return;
@@ -108,7 +114,8 @@ export function useDeleteTransaction() {
   const { user } = useAuth();
   
   return useMutation({
-    mutationFn: (id: string | number) => deleteTransaction(id),
+    // Delega a exclusão para o Repositório
+    mutationFn: (id: string | number) => transactionsRepository.deleteTransaction(id),
     
     onMutate: async (deletedId) => {
       if (!user?.uid) return;

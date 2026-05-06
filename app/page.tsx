@@ -1,19 +1,20 @@
-"use function"; // Corrigindo para "use client"
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { TransactionType } from "@/types";
 import dynamic from "next/dynamic";
 
-import { calculateBalance } from "@/utils/calculateBalance";
+// ---> IMPORTANDO DA NOVA ARQUITETURA LIMPA <---
+import { TransactionType } from "@/core/domain/entities/Transaction"; // Tipagem vem do Domínio
+import { calculateBalance } from "@/core/useCases/CalculateBalance"; // Lógica vem do Caso de Uso
+
 import { formatCurrency, formatDate } from "@/utils/formatters";
 import { getWeekday } from "@/utils/getWeekday";
 
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useGetTransactions, useCreateTransaction } from "@/hooks/useTransactions";
 import { useFeedback } from "@/contexts/FeedbackContext";
-import { useAuth } from "@/contexts/AuthContext"; // <-- Importando o AuthContext
+import { useAuth } from "@/contexts/AuthContext"; 
 
 import BoxBalance from "@/components/BoxBalance/BoxBalance";
 import Loading from "@/components/Loading/Loading";
@@ -32,7 +33,8 @@ const DashboardContainer = dynamic(
 );
 
 export default function Home() {
-  const [type, setType] = useState<TransactionType>("");
+  // Ajuste no tipo para aceitar a string vazia inicial
+  const [type, setType] = useState<TransactionType | "">("");
   const [value, setValue] = useState("");
   const [description, setDescription] = useState("");
   const [receipt, setReceipt] = useState("");
@@ -40,27 +42,25 @@ export default function Home() {
   const isMobile = useIsMobile();
   const { showFeedback } = useFeedback();
   
-  // <-- Invocando a Autenticação e Roteamento
   const { user, loading: authLoading } = useAuth(); 
   const router = useRouter();
 
   const { data: transactions, error, isLoading } = useGetTransactions();
   const { mutateAsync: createTx, isPending: isCreating } = useCreateTransaction();
 
-  // <-- Lógica de redirecionamento para quem não tem login
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
     }
   }, [user, authLoading, router]);
 
-  // <-- Telas de carregamento e bloqueio (Importante respeitar a ordem!)
   if (authLoading) return <Loading />;
-  if (!user) return null; // Evita piscar a tela da Home antes do redirecionamento
+  if (!user) return null; 
 
   if (error) return <div>Falha ao carregar...</div>;
   if (isLoading || !transactions) return <Loading />;
 
+  // O cálculo de saldo foi totalmente isolado!
   const balance = calculateBalance(transactions);
   const formatedBalance = formatCurrency(balance);
 
@@ -83,14 +83,14 @@ export default function Home() {
       return;
     }
 
-    if (type == "transferencia" && numericAmount > balance) {
+    if (type === "transferencia" && numericAmount > balance) {
       showFeedback("Erro!!!", "Saldo insuficiente para realizar a transferência!");
       return;
     }
 
     try {
       await createTx({
-        type,
+        type: type as TransactionType, // Forçamos o tipo correto pro Firebase aqui
         amount: numericAmount,
         description,
         receipt, 
@@ -117,11 +117,11 @@ export default function Home() {
 
         <NewTransaction
           title="Nova transação"
-          type={type}
+          type={type} 
           value={value}
           description={description}
           receipt={receipt}
-          onTypeChange={setType}
+          onTypeChange={(newType) => setType(newType)} // Mantendo a tipagem sincronizada
           onValueChange={setValue}
           onDescriptionChange={setDescription}
           onReceiptChange={setReceipt}
@@ -129,7 +129,7 @@ export default function Home() {
           disabled={isCreating}
         />
 
-        <div className={style.dashboardContainer}>
+        <div className={style.dashboardContainer} style={{ marginTop: "32px", width: "100%" }}>
           <DashboardContainer />
         </div>
       </div>

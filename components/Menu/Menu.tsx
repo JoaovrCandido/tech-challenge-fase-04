@@ -2,14 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation"; // <-- Adicionado o useRouter
+import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { signOut } from "firebase/auth"; // <-- Função de saída do Firebase
-import { auth } from "@/lib/firebase"; // <-- Instância da sua autenticação
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { MenuItem } from "@/types";
-import { getTransactions } from "@/lib/api"; 
+import { useAuth } from "@/contexts/AuthContext";
+
+// -> IMPORTAÇÃO DA CLEAN ARCHITECTURE (Repositório)
+import { transactionsRepository } from "@/infrastructure/database/FirebaseTransactionsRepository";
 
 import style from "./Menu.module.css";
 
@@ -22,31 +25,31 @@ export default function Menu() {
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
   const pathname = usePathname();
-  const router = useRouter(); // <-- Invocando o router para redirecionar após o logout
+  const router = useRouter();
   
-  // Instanciamos o QueryClient para manipular o cache diretamente
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const closeMenu = () => setOpen(false);
 
-  // Função de Logout Segura
+  // Logout seguro: Desloga, limpa o cache da memória e redireciona
   const handleLogout = async () => {
     try {
-      await signOut(auth); // Desloga do Firebase
-      queryClient.clear(); // Segurança: Limpa os dados do usuário antigo da memória!
-      router.push("/login"); // Manda para a tela de login
-      closeMenu(); // Fecha o menu no mobile
+      await signOut(auth);
+      queryClient.clear(); 
+      router.push("/login");
+      closeMenu();
     } catch (error) {
       console.error("Erro ao sair:", error);
     }
   };
 
-  // Função avançada de Intent-based Prefetching
+  // Prefetch Inteligente usando o Repositório novo
   const handlePrefetch = (path: string) => {
-    if (path === "/" || path === "/transacoes") {
+    if (user?.uid && (path === "/" || path === "/transacoes")) {
       queryClient.prefetchQuery({
-        queryKey: ["transactions"],
-        queryFn: getTransactions,
+        queryKey: ["transactions", user.uid],
+        queryFn: () => transactionsRepository.getTransactions(user.uid),
         staleTime: 1000 * 60 * 5, 
       });
     }
@@ -75,13 +78,14 @@ export default function Menu() {
             </li>
           );
         })}
-        
-        {/* NOVO: Botão de Sair com cor de alerta */}
+
+        {/* Botão de Sair com cor de alerta */}
         <li 
-          className={`${style.menuItem} ${style.logoutItem}`} 
-          onClick={handleLogout}
+          className={style.menuItem} 
+          onClick={handleLogout} 
+          style={{ cursor: "pointer", marginTop: "10px" }}
         >
-          <span>Sair</span>
+          <span style={{ color: "var(--color-danger)", fontWeight: "bold" }}>Sair</span>
         </li>
       </ul>
     </div>

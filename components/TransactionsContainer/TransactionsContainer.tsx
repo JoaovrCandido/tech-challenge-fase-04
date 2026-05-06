@@ -1,74 +1,57 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
-import dynamic from "next/dynamic";
 
-import { Transaction, TransactionType, TransactionInput } from "@/types";
-import { sortTransactionsByDate } from "@/utils/transactions";
+// -> IMPORTS DA CLEAN ARCHITECTURE
+import { Transaction, TransactionType } from "@/core/domain/entities/Transaction";
+import { TransactionInput } from "@/core/domain/repositories/ITransactionsRepository";
+import { sortTransactionsByDate } from "@/core/useCases/SortTransactions";
 
+// -> NOSSOS HOOKS (Reativos, lidam com Cache e com o Firebase)
 import { useGetTransactions, useUpdateTransaction, useDeleteTransaction } from "@/hooks/useTransactions";
-import { useFeedback } from "@/contexts/FeedbackContext";
 
 import Loading from "../Loading/Loading";
 import TransactionsList from "./components/TransactionsList/TransactionsList";
 import TransactionsListHome from "./components/TransactionsListHome/TransactionsListHome";
 import Modal from "../Modal/Modal";
+import NewTransaction from "../NewTransaction/NewTransaction";
+import DeleteTransaction from "../DeleteTransaction/DeleteTransaction";
+import SuccessModal from "../SuccessModal/SuccessModal";
 
-import style from "./TransactionContainer.module.css";
-
-const NewTransaction = dynamic(() => import("../NewTransaction/NewTransaction"), {
-  ssr: false, // Modais não precisam ser renderizados no servidor, economiza processamento!
-});
-
-const DeleteTransaction = dynamic(() => import("../DeleteTransaction/DeleteTransaction"), {
-  ssr: false,
-});
-
-const TransactionsContainer = () => {
+export default function TransactionsContainer() {
   const pathname = usePathname();
   const isHome = pathname === "/";
 
+  // Chamadas limpas usando React Query!
   const { data: transactions, error, isLoading } = useGetTransactions();
-  const { mutateAsync: updateTx, isPending: isUpdating } = useUpdateTransaction();
-  const { mutateAsync: deleteTx, isPending: isDeleting } = useDeleteTransaction();
-  
-  const { showFeedback } = useFeedback();
+  const { mutateAsync: updateTx } = useUpdateTransaction();
+  const { mutateAsync: deleteTx } = useDeleteTransaction();
 
-  // Estados dos modais de edição e exclusão
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const [editType, setEditType] = useState<TransactionType>("deposito");
+  
+  const [editType, setEditType] = useState<TransactionType | "">("deposito");
   const [editValue, setEditValue] = useState("");
   const [editDescription, setEditDescription] = useState("");
-
-  // ESTADOS DO FILTRO AVANÇADO
-  const [filterType, setFilterType] = useState<TransactionType | "todos">("todos");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-
-  // ESTADO DO SCROLL INFINITO (Inicia mostrando 10 transações)
-  const [visibleCount, setVisibleCount] = useState(10);
-
-  // Reseta a quantidade visível sempre que o usuário mexer em algum filtro
-  useEffect(() => {
-    setVisibleCount(10);
-  }, [filterType, searchQuery, startDate, endDate]);
+  const [isModalSucessOpen, setIsModalSucessOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalTitle, setModalTitle] = useState("Sucesso!");
 
   const handleEditClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     setEditType(transaction.type);
     
-    // MÁSCARA NA EDIÇÃO: Formata o valor bruto do banco para exibir na tela
+    // Recriando a máscara visual
     const formattedValue = transaction.value.toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",
     });
-    
     setEditValue(formattedValue);
     setEditDescription(transaction.description || "");
+
     setIsModalOpen(true);
   };
 
@@ -89,15 +72,16 @@ const TransactionsContainer = () => {
   };
 
   const handleEditSubmit = async () => {
-    if (!selectedTransaction) return;
+    if (!selectedTransaction || !editType) return;
 
+    setIsSubmitting(true);
     try {
-      // DESFAZ A MÁSCARA NA EDIÇÃO
+      // Removendo a máscara para o Firebase
       const cleanString = editValue.replace(/[^\d,-]/g, "").replace(",", ".");
       const numericValue = Number(cleanString);
 
       const updateData: Partial<TransactionInput> = {
-        type: editType,
+        type: editType as TransactionType,
         amount: numericValue,
         description: editDescription,
       };
@@ -105,125 +89,55 @@ const TransactionsContainer = () => {
       await updateTx({ id: selectedTransaction.id, data: updateData });
 
       handleCloseModal();
-      showFeedback("Sucesso!!!", "Transação editada com sucesso!");
+      setIsModalSucessOpen(true);
+      setModalTitle("Sucesso!!!");
+      setModalMessage("Transação editada com sucesso!");
     } catch (err) {
       console.error("Erro ao atualizar transação:", err);
-      showFeedback("Erro!!!", "Ocorreu um erro ao editar a transação.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDeleteSubmit = async () => {
     if (!selectedTransaction) return;
 
+    setIsSubmitting(true);
     try {
       await deleteTx(selectedTransaction.id);
+
       handleCloseDeleteModal();
-      showFeedback("Sucesso!!!", "Transação deletada com sucesso!");
+      setIsModalSucessOpen(true);
+      setModalTitle("Sucesso!!!");
+      setModalMessage("Transação deletada com sucesso!");
     } catch (err) {
       console.error("Erro ao deletar transação:", err);
-      showFeedback("Erro!!!", "Ocorreu um erro ao deletar a transação.");
+    } finally {
+      setIsSubmitting(false);
     }
-  };
-
-  // Lógica derivada para os filtros e ordenação
-  const filteredAndSortedTransactions = useMemo(() => {
-    if (!transactions) return [];
-
-    const filtered = transactions.filter((t) => {
-      // Filtro de Tipo
-      const matchType = filterType === "todos" || t.type === filterType;
-      
-      // Filtro de Texto (Busca)
-      const matchSearch = (t.description || "").toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // Filtro de Data (Como é AAAA-MM-DD, a comparação de strings é segura e precisa)
-      const matchStart = startDate ? t.date >= startDate : true;
-      const matchEnd = endDate ? t.date <= endDate : true;
-
-      return matchType && matchSearch && matchStart && matchEnd;
-    });
-
-    return sortTransactionsByDate(filtered);
-  }, [transactions, filterType, searchQuery, startDate, endDate]);
-
-  // Fatiamento (Slicing) para criar a paginação do Scroll Infinito no lado do cliente
-  const visibleTransactions = filteredAndSortedTransactions.slice(0, visibleCount);
-  const hasMore = visibleCount < filteredAndSortedTransactions.length;
-
-  const handleLoadMore = () => {
-    setVisibleCount((prev) => prev + 10);
   };
 
   if (isLoading) return <Loading />;
   if (error) return <p>Ocorreu um erro ao buscar as transações.</p>;
   if (!transactions) return <p>Nenhuma transação encontrada.</p>;
 
-  const isSubmitting = isUpdating || isDeleting;
+  // Caso de uso injetado
+  const sortedTransactions = sortTransactionsByDate(transactions);
 
   return (
     <>
       {isHome ? (
         <TransactionsListHome
           title="Últimas transações"
-          transaction={sortTransactionsByDate(transactions).slice(0, 3)}
+          transaction={sortedTransactions.slice(0, 3)}
         />
       ) : (
-        <div className={style.container}>
-          
-          {/* UI DO FILTRO AVANÇADO */}
-          <div className={style.filterContainer}>
-            <input 
-              type="text" 
-              placeholder="Buscar por descrição..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={style.searchInput}
-            />
-            
-            <select 
-              value={filterType} 
-              onChange={(e) => setFilterType(e.target.value as TransactionType | "todos")}
-              className={style.selectInput}
-            >
-              <option value="todos">Todos os tipos</option>
-              <option value="deposito">Depósitos</option>
-              <option value="transferencia">Transferências</option>
-            </select>
-
-            <div
-            className={style.dateFilterContainer}
-            >
-              <span className={style.dateFilterLabel}>
-                De:
-              </span>
-              <input 
-                type="date" 
-                value={startDate} 
-                onChange={(e) => setStartDate(e.target.value)} 
-                className={style.dateInput}
-              />
-            </div>
-
-            <div className={style.dateFilterContainer}>
-              <span className={style.dateFilterLabel}>Até:</span>
-              <input 
-                type="date" 
-                value={endDate} 
-                onChange={(e) => setEndDate(e.target.value)} 
-                className={style.dateInput}
-              />
-            </div>
-          </div>
-
-          <TransactionsList
-            title="Extrato"
-            transactions={visibleTransactions}
-            onEditClick={handleEditClick}
-            onDeleteClick={handleDeleteClick}
-            onLoadMore={handleLoadMore} // Passando a prop que aciona o scroll
-            hasMore={hasMore} // Passando a prop que avisa se ainda há itens
-          />
-        </div>
+        <TransactionsList
+          title="Extrato"
+          transactions={sortedTransactions}
+          onEditClick={handleEditClick}
+          onDeleteClick={handleDeleteClick}
+        />
       )}
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
@@ -248,8 +162,13 @@ const TransactionsContainer = () => {
           disabled={isSubmitting}
         />
       </Modal>
+
+      <SuccessModal
+        isOpen={isModalSucessOpen}
+        title={modalTitle}
+        onClose={() => setIsModalSucessOpen(false)}
+        message={modalMessage}
+      />
     </>
   );
-};
-
-export default TransactionsContainer;
+}
