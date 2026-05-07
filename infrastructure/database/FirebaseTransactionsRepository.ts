@@ -3,6 +3,9 @@ import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } 
 import { ITransactionsRepository, TransactionInput } from "@/core/domain/repositories/ITransactionsRepository";
 import { Transaction } from "@/core/domain/entities/Transaction";
 
+// ---> IMPORTAÇÃO DO NOSSO SERVIÇO DE CRIPTOGRAFIA <---
+import { cryptoService } from "../security/CryptoService";
+
 export class FirebaseTransactionsRepository implements ITransactionsRepository {
   private collectionRef = collection(db, "transactions");
 
@@ -11,33 +14,59 @@ export class FirebaseTransactionsRepository implements ITransactionsRepository {
     const q = query(this.collectionRef, where("userId", "==", userId));
     const querySnapshot = await getDocs(q);
     
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Transaction[];
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        userId: data.userId,
+        type: data.type,
+        value: data.value,
+        date: data.date,
+        // ---> DESCRIPTOGRAFANDO OS DADOS SENSÍVEIS NA LEITURA <---
+        description: cryptoService.decrypt(data.description),
+        receipt: cryptoService.decrypt(data.receipt),
+      };
+    }) as Transaction[];
   }
 
   async createTransaction(data: TransactionInput, userId: string): Promise<Transaction> {
     if (!userId) throw new Error("Usuário não autenticado");
+    
     const txData = {
       userId,
       type: data.type,
       value: data.amount,
       date: new Date().toISOString().split('T')[0],
-      description: data.description || "",
-      receipt: data.receipt || "",
+      // ---> CRIPTOGRAFANDO OS DADOS SENSÍVEIS NA ESCRITA <---
+      description: cryptoService.encrypt(data.description || ""),
+      receipt: cryptoService.encrypt(data.receipt || ""),
     };
+    
     const docRef = await addDoc(this.collectionRef, txData);
-    return { id: docRef.id, ...txData } as Transaction;
+    
+    // Retornamos para a UI o dado limpo (descriptografado) para exibição imediata
+    return { 
+      id: docRef.id, 
+      ...txData, 
+      description: data.description || "", 
+      receipt: data.receipt || "" 
+    } as Transaction;
   }
 
   async updateTransaction(id: string | number, data: Partial<TransactionInput>): Promise<void> {
     const docRef = doc(db, "transactions", id.toString());
     const mappedData: any = {};
+    
     if (data.type !== undefined) mappedData.type = data.type;
     if (data.amount !== undefined) mappedData.value = data.amount;
-    if (data.description !== undefined) mappedData.description = data.description;
-    if (data.receipt !== undefined) mappedData.receipt = data.receipt;
+    
+    // ---> CRIPTOGRAFANDO NA EDIÇÃO <---
+    if (data.description !== undefined) {
+      mappedData.description = cryptoService.encrypt(data.description);
+    }
+    if (data.receipt !== undefined) {
+      mappedData.receipt = cryptoService.encrypt(data.receipt);
+    }
     
     await updateDoc(docRef, mappedData);
   }
@@ -48,5 +77,4 @@ export class FirebaseTransactionsRepository implements ITransactionsRepository {
   }
 }
 
-// Exportamos uma instância única (Singleton) para ser usada no app
 export const transactionsRepository = new FirebaseTransactionsRepository();

@@ -13,6 +13,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.100.9",
     "@tanstack/react-query-devtools": "^5.100.9",
+    "crypto-js": "^4.2.0",
     "firebase": "^12.12.1",
     "next": "15.5.5",
     "react": "19.1.0",
@@ -29,6 +30,7 @@
     "@storybook/addon-vitest": "^9.1.12",
     "@storybook/nextjs": "^9.1.12",
     "@storybook/testing-library": "^0.2.1",
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
