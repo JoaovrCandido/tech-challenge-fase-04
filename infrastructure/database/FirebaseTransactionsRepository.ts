@@ -20,6 +20,7 @@ export class FirebaseTransactionsRepository implements ITransactionsRepository {
         type: data.type,
         value: data.value,
         date: data.date,
+        createdAt: data.createdAt || 0,
         description: cryptoService.decrypt(data.description),
         receipt: cryptoService.decrypt(data.receipt),
       };
@@ -38,7 +39,8 @@ export class FirebaseTransactionsRepository implements ITransactionsRepository {
       userId,
       type: data.type,
       value: data.amount,
-      date: localDateString, 
+      date: localDateString,
+      createdAt: Date.now(),
       description: cryptoService.encrypt(data.description || ""),
       receipt: cryptoService.encrypt(data.receipt || ""),
     };

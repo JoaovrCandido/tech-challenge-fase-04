@@ -37,8 +37,10 @@ export function useCreateTransaction() {
           value: newTxData.amount, 
           description: newTxData.description || "",
           receipt: newTxData.receipt || "",
+          createdAt: Date.now(),
         };
-        return oldData ? [...oldData, optimisticTransaction] : [optimisticTransaction];
+      
+        return oldData ? [optimisticTransaction, ...oldData] : [optimisticTransaction];
       });
 
       return { previousTransactions };

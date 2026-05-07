@@ -7,4 +7,5 @@ export interface Transaction {
   date: string;
   description: string;
   receipt?: string;
+  createdAt?: number;
 }
