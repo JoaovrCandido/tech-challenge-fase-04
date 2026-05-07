@@ -52,6 +52,8 @@ export interface TransactionsListProps {
   title: string;
   onEditClick: (transaction: Transaction) => void;
   onDeleteClick: (transaction: Transaction) => void;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
 }
 
 export interface TransactionsListHomeProps {

@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-// -> IMPORTS DA CLEAN ARCHITECTURE
+// -> IMPORTS DA CLEAN ARCHITECTURE (Entidades e Casos de Uso)
 import { Transaction, TransactionType } from "@/core/domain/entities/Transaction";
 import { TransactionInput } from "@/core/domain/repositories/ITransactionsRepository";
 import { sortTransactionsByDate } from "@/core/useCases/SortTransactions";
+import { filterTransactions } from "@/core/useCases/FilterTransactions"; // <-- NOVO CASO DE USO
 
-// -> NOSSOS HOOKS (Reativos, lidam com Cache e com o Firebase)
+// -> NOSSOS HOOKS
 import { useGetTransactions, useUpdateTransaction, useDeleteTransaction } from "@/hooks/useTransactions";
 
 import Loading from "../Loading/Loading";
@@ -19,18 +20,19 @@ import NewTransaction from "../NewTransaction/NewTransaction";
 import DeleteTransaction from "../DeleteTransaction/DeleteTransaction";
 import SuccessModal from "../SuccessModal/SuccessModal";
 
+import style from "./TransactionContainer.module.css";
+
 export default function TransactionsContainer() {
   const pathname = usePathname();
   const isHome = pathname === "/";
 
-  // Chamadas limpas usando React Query!
   const { data: transactions, error, isLoading } = useGetTransactions();
-  const { mutateAsync: updateTx } = useUpdateTransaction();
-  const { mutateAsync: deleteTx } = useDeleteTransaction();
+  const { mutateAsync: updateTx, isPending: isUpdating } = useUpdateTransaction();
+  const { mutateAsync: deleteTx, isPending: isDeleting } = useDeleteTransaction();
 
+  // Estados dos modais
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   
   const [editType, setEditType] = useState<TransactionType | "">("deposito");
@@ -40,11 +42,24 @@ export default function TransactionsContainer() {
   const [modalMessage, setModalMessage] = useState("");
   const [modalTitle, setModalTitle] = useState("Sucesso!");
 
+  // ---> ESTADOS DO FILTRO AVANÇADO <---
+  const [filterType, setFilterType] = useState<TransactionType | "todos">("todos");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  // ---> ESTADO DO SCROLL INFINITO <---
+  const [visibleCount, setVisibleCount] = useState(10);
+
+  // Reseta a quantidade visível sempre que o usuário mexer em algum filtro
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [filterType, searchQuery, startDate, endDate]);
+
   const handleEditClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     setEditType(transaction.type);
     
-    // Recriando a máscara visual
     const formattedValue = transaction.value.toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",
@@ -74,9 +89,7 @@ export default function TransactionsContainer() {
   const handleEditSubmit = async () => {
     if (!selectedTransaction || !editType) return;
 
-    setIsSubmitting(true);
     try {
-      // Removendo a máscara para o Firebase
       const cleanString = editValue.replace(/[^\d,-]/g, "").replace(",", ".");
       const numericValue = Number(cleanString);
 
@@ -94,50 +107,113 @@ export default function TransactionsContainer() {
       setModalMessage("Transação editada com sucesso!");
     } catch (err) {
       console.error("Erro ao atualizar transação:", err);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   const handleDeleteSubmit = async () => {
     if (!selectedTransaction) return;
 
-    setIsSubmitting(true);
     try {
       await deleteTx(selectedTransaction.id);
-
       handleCloseDeleteModal();
       setIsModalSucessOpen(true);
       setModalTitle("Sucesso!!!");
       setModalMessage("Transação deletada com sucesso!");
     } catch (err) {
       console.error("Erro ao deletar transação:", err);
-    } finally {
-      setIsSubmitting(false);
     }
+  };
+
+  // ---> APLICANDO OS CASOS DE USO (Clean Architecture) <---
+  const filteredAndSortedTransactions = useMemo(() => {
+    if (!transactions) return [];
+
+    // 1. Aplica o Caso de Uso de Filtro
+    const filtered = filterTransactions(transactions, {
+      type: filterType,
+      searchQuery,
+      startDate,
+      endDate
+    });
+
+    // 2. Aplica o Caso de Uso de Ordenação
+    return sortTransactionsByDate(filtered);
+  }, [transactions, filterType, searchQuery, startDate, endDate]);
+
+  // Lógica de Slicing (Paginação/Scroll Infinito)
+  const visibleTransactions = filteredAndSortedTransactions.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredAndSortedTransactions.length;
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + 10);
   };
 
   if (isLoading) return <Loading />;
   if (error) return <p>Ocorreu um erro ao buscar as transações.</p>;
   if (!transactions) return <p>Nenhuma transação encontrada.</p>;
 
-  // Caso de uso injetado
-  const sortedTransactions = sortTransactionsByDate(transactions);
+  const isSubmitting = isUpdating || isDeleting;
 
   return (
     <>
       {isHome ? (
         <TransactionsListHome
           title="Últimas transações"
-          transaction={sortedTransactions.slice(0, 3)}
+          transaction={sortTransactionsByDate(transactions).slice(0, 3)}
         />
       ) : (
-        <TransactionsList
-          title="Extrato"
-          transactions={sortedTransactions}
-          onEditClick={handleEditClick}
-          onDeleteClick={handleDeleteClick}
-        />
+        <div className={style.container}>
+          
+          {/* UI DO FILTRO AVANÇADO RESTAURADA */}
+          <div className={style.filterContainer}>
+            <input 
+              type="text" 
+              placeholder="Buscar por descrição..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={style.searchInput}
+            />
+            
+            <select 
+              value={filterType} 
+              onChange={(e) => setFilterType(e.target.value as TransactionType | "todos")}
+              className={style.selectInput}
+            >
+              <option value="todos">Todos os tipos</option>
+              <option value="deposito">Depósitos</option>
+              <option value="transferencia">Transferências</option>
+            </select>
+
+            <div className={style.dateFilterContainer}>
+              <span className={style.dateFilterLabel}>De:</span>
+              <input 
+                type="date" 
+                value={startDate} 
+                onChange={(e) => setStartDate(e.target.value)} 
+                className={style.dateInput}
+              />
+            </div>
+
+            <div className={style.dateFilterContainer}>
+              <span className={style.dateFilterLabel}>Até:</span>
+              <input 
+                type="date" 
+                value={endDate} 
+                onChange={(e) => setEndDate(e.target.value)} 
+                className={style.dateInput}
+              />
+            </div>
+          </div>
+
+          <TransactionsList
+            title="Extrato"
+            transactions={visibleTransactions}
+            onEditClick={handleEditClick}
+            onDeleteClick={handleDeleteClick}
+            onLoadMore={handleLoadMore} 
+            hasMore={hasMore} 
+          />
+        </div>
       )}
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
@@ -146,7 +222,7 @@ export default function TransactionsContainer() {
           type={editType}
           value={editValue}
           description={editDescription}
-          onTypeChange={setEditType}
+          onTypeChange={(t) => setEditType(t as TransactionType)}
           onValueChange={setEditValue}
           onDescriptionChange={setEditDescription}
           onSubmit={handleEditSubmit}
