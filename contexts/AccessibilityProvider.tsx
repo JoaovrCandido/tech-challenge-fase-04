@@ -24,12 +24,35 @@ export function AccessibilityProvider({
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [fontLevel, setFontLevel] = useState<0 | 1 | 2>(0);
 
+  // 1. Lê as preferências salvas no navegador assim que a aplicação abre
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("@finance:theme") as "light" | "dark" | null;
+    const savedFont = localStorage.getItem("@finance:fontLevel");
+
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+    if (savedFont !== null) {
+      setFontLevel(Number(savedFont) as 0 | 1 | 2);
+    }
+  }, []);
+
+  // 2. Altera o estado e já salva a nova preferência no Local Storage
   const toggleDarkMode = () => {
-    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
+    setTheme((prevTheme) => {
+      const newTheme = prevTheme === "light" ? "dark" : "light";
+      localStorage.setItem("@finance:theme", newTheme); // Salva no navegador
+      return newTheme;
+    });
   };
 
+  // 3. Altera o estado e já salva a nova preferência no Local Storage
   const toggleChangeFontSize = () => {
-    setFontLevel((prevLevel) => ((prevLevel + 1) % 3) as 0 | 1 | 2);
+    setFontLevel((prevLevel) => {
+      const newLevel = ((prevLevel + 1) % 3) as 0 | 1 | 2;
+      localStorage.setItem("@finance:fontLevel", newLevel.toString()); // Salva no navegador
+      return newLevel;
+    });
   };
 
   // MOTOR DO DARK MODE COM A NOVA PALETA SAAS
@@ -61,7 +84,7 @@ export function AccessibilityProvider({
     }
   }, [theme]);
 
-  // MOTOR DE ACESSIBILIDADE DE FONTES (Mantido intacto)
+  // MOTOR DE ACESSIBILIDADE DE FONTES
   useEffect(() => {
     const root = document.documentElement;
 
