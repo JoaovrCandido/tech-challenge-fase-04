@@ -40,7 +40,7 @@
     transition: all 0.2s ease;
     font-size: var(--font-size-md);
     font-weight: 600;
-    flex: 1; /* Faz os botões ficarem do mesmo tamanho, se houver mais de um */
+    flex: 1;
 }
 
 .button:hover {

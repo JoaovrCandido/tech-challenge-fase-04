@@ -2,8 +2,6 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
 import { ITransactionsRepository, TransactionInput } from "@/core/domain/repositories/ITransactionsRepository";
 import { Transaction } from "@/core/domain/entities/Transaction";
-
-// ---> IMPORTAÇÃO DO NOSSO SERVIÇO DE CRIPTOGRAFIA <---
 import { cryptoService } from "../security/CryptoService";
 
 export class FirebaseTransactionsRepository implements ITransactionsRepository {
@@ -22,7 +20,6 @@ export class FirebaseTransactionsRepository implements ITransactionsRepository {
         type: data.type,
         value: data.value,
         date: data.date,
-        // ---> DESCRIPTOGRAFANDO OS DADOS SENSÍVEIS NA LEITURA <---
         description: cryptoService.decrypt(data.description),
         receipt: cryptoService.decrypt(data.receipt),
       };
@@ -32,19 +29,22 @@ export class FirebaseTransactionsRepository implements ITransactionsRepository {
   async createTransaction(data: TransactionInput, userId: string): Promise<Transaction> {
     if (!userId) throw new Error("Usuário não autenticado");
     
+    const today = new Date();
+    const localDateString = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+      .toISOString()
+      .split('T')[0];
+    
     const txData = {
       userId,
       type: data.type,
       value: data.amount,
-      date: new Date().toISOString().split('T')[0],
-      // ---> CRIPTOGRAFANDO OS DADOS SENSÍVEIS NA ESCRITA <---
+      date: localDateString, 
       description: cryptoService.encrypt(data.description || ""),
       receipt: cryptoService.encrypt(data.receipt || ""),
     };
     
     const docRef = await addDoc(this.collectionRef, txData);
     
-    // Retornamos para a UI o dado limpo (descriptografado) para exibição imediata
     return { 
       id: docRef.id, 
       ...txData, 
@@ -60,7 +60,6 @@ export class FirebaseTransactionsRepository implements ITransactionsRepository {
     if (data.type !== undefined) mappedData.type = data.type;
     if (data.amount !== undefined) mappedData.value = data.amount;
     
-    // ---> CRIPTOGRAFANDO NA EDIÇÃO <---
     if (data.description !== undefined) {
       mappedData.description = cryptoService.encrypt(data.description);
     }

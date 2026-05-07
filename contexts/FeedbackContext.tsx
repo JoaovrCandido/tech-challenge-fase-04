@@ -28,7 +28,6 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
   return (
     <FeedbackContext.Provider value={{ showFeedback, hideFeedback }}>
       {children}
-      {/* O modal agora vive globalmente aqui! */}
       <SuccessModal
         isOpen={isOpen}
         title={title}
@@ -39,5 +38,4 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Hook customizado para facilitar o uso
 export const useFeedback = () => useContext(FeedbackContext);

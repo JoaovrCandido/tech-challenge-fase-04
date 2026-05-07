@@ -35,7 +35,6 @@
     outline: none;
 }
 
-/* Efeito de foco moderno (Anel Azul) */
 .newTransaction select:focus,
 .newTransaction input:focus {
     border-color: var(--color-accent);
@@ -57,7 +56,7 @@
 }
 
 .button:hover:not(:disabled) {
-    background-color: #1d4ed8; /* Blue 700 */
+    background-color: #1d4ed8;
 }
 
 .button:active:not(:disabled) {

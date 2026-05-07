@@ -1,5 +1,3 @@
-// core/domain/entities/Transaction.ts
-
 export type TransactionType = "deposito" | "transferencia";
 
 export interface Transaction {

@@ -8,7 +8,7 @@
 
 .containerStatement {
   display: grid;
-  grid-template-columns: repeat(12, 1fr); /* Atualizado para 12 colunas */
+  grid-template-columns: repeat(12, 1fr);
   gap: 32px;
 
   @media (max-width: 1024px) {
@@ -18,7 +18,7 @@
 }
 
 .boxStatement {
-  grid-column: span 10; /* Acompanha o menu que ocupa as colunas restantes */
+  grid-column: span 10;
 
   @media (max-width: 1024px) {
     grid-column: auto;

@@ -11,7 +11,6 @@ import { useGetTransactions } from "@/hooks/useTransactions";
 import { formatCurrency } from "@/utils/formatters";
 import Loading from "../Loading/Loading";
 
-// ---> IMPORTANDO NOSSOS CASOS DE USO E REPOSITÓRIOS (Clean Architecture) <---
 import { generateDashboardInsights } from "@/core/useCases/GenerateDashboardInsights";
 import { preferencesRepository } from "@/infrastructure/database/FirebasePreferencesRepository";
 import { UserPreferences } from "@/core/domain/repositories/IPreferencesRepository";
@@ -31,7 +30,6 @@ export default function DashboardContainer() {
   const [tempPrefs, setTempPrefs] = useState<UserPreferences>(defaultPreferences);
   const [isLoadingPrefs, setIsLoadingPrefs] = useState(true);
 
-  // Busca Preferências via Repositório (Sem Firebase exposto)
   useEffect(() => {
     async function fetchPreferences() {
       if (!user?.uid) return;
@@ -50,7 +48,6 @@ export default function DashboardContainer() {
     fetchPreferences();
   }, [user]);
 
-  // Salva Preferências via Repositório
   const handleSavePreferences = async () => {
     if (!user?.uid) return;
     try {
@@ -62,7 +59,6 @@ export default function DashboardContainer() {
     }
   };
 
-  // Cálculo de Regras de Negócio (Isolado no Caso de Uso)
   const insights = useMemo(() => {
     return generateDashboardInsights(transactions);
   }, [transactions]);
@@ -85,7 +81,6 @@ export default function DashboardContainer() {
       </div>
 
       <div className={style.chartsGrid}>
-        {/* WIDGET: Alerta de Gastos */}
         {prefs.spendingAlert > 0 && (
           <div className={`${style.chartBox} ${isAlertTriggered ? style.alertDanger : style.alertSafe}`}>
             <h3>🚨 Alerta de Gastos</h3>
@@ -95,7 +90,6 @@ export default function DashboardContainer() {
           </div>
         )}
 
-        {/* WIDGET: Meta de Economia */}
         {prefs.savingsGoal > 0 && (
           <div className={style.chartBox}>
             <h3>🎯 Meta de Economia</h3>
@@ -113,7 +107,6 @@ export default function DashboardContainer() {
           </div>
         )}
 
-        {/* WIDGET: Sugestões */}
         {prefs.showSuggestions && insights.suggestions.length > 0 && (
           <div className={style.suggestionsCard}>
             <h3>💡 Insights</h3>
@@ -125,7 +118,6 @@ export default function DashboardContainer() {
           </div>
         )}
 
-        {/* WIDGET: Gráfico de Pizza */}
         {prefs.showPieChart && (
           <div className={style.chartBox}>
             <h3>Resumo Geral</h3>
@@ -145,7 +137,6 @@ export default function DashboardContainer() {
           </div>
         )}
 
-        {/* WIDGET: Gráfico de Barras */}
         {prefs.showBarChart && (
           <div className={style.chartBox}>
             <h3>Evolução Mensal</h3>
@@ -166,7 +157,6 @@ export default function DashboardContainer() {
         )}
       </div>
 
-      {/* MODAL DE PERSONALIZAÇÃO */}
       {isModalOpen && (
         <div className={style.modalOverlay}>
           <div className={style.modalContent}>

@@ -4,12 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
-// ---> IMPORTANDO DA NOVA ARQUITETURA LIMPA <---
-import { TransactionType } from "@/core/domain/entities/Transaction"; // Tipagem vem do Domínio
-import { calculateBalance } from "@/core/useCases/CalculateBalance"; // Lógica vem do Caso de Uso
+import { TransactionType } from "@/core/domain/entities/Transaction";
+import { calculateBalance } from "@/core/useCases/CalculateBalance";
 
-import { formatCurrency, formatDate } from "@/utils/formatters";
-import { getWeekday } from "@/utils/getWeekday";
+import { formatCurrency, formatDate, getWeekday } from "@/utils/formatters";
 
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useGetTransactions, useCreateTransaction } from "@/hooks/useTransactions";
@@ -33,7 +31,6 @@ const DashboardContainer = dynamic(
 );
 
 export default function Home() {
-  // Ajuste no tipo para aceitar a string vazia inicial
   const [type, setType] = useState<TransactionType | "">("");
   const [value, setValue] = useState("");
   const [description, setDescription] = useState("");
@@ -60,7 +57,6 @@ export default function Home() {
   if (error) return <div>Falha ao carregar...</div>;
   if (isLoading || !transactions) return <Loading />;
 
-  // O cálculo de saldo foi totalmente isolado!
   const balance = calculateBalance(transactions);
   const formatedBalance = formatCurrency(balance);
 
@@ -90,7 +86,7 @@ export default function Home() {
 
     try {
       await createTx({
-        type: type as TransactionType, // Forçamos o tipo correto pro Firebase aqui
+        type: type as TransactionType,
         amount: numericAmount,
         description,
         receipt, 
@@ -121,7 +117,7 @@ export default function Home() {
           value={value}
           description={description}
           receipt={receipt}
-          onTypeChange={(newType) => setType(newType)} // Mantendo a tipagem sincronizada
+          onTypeChange={(newType) => setType(newType)}
           onValueChange={setValue}
           onDescriptionChange={setDescription}
           onReceiptChange={setReceipt}

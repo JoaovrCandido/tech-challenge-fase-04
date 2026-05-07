@@ -27,11 +27,9 @@ export default function Login() {
         await authService.register(email, password);
       }
       
-      // Se der tudo certo, manda o usuário para a Home (Dashboard)
       router.push("/");
     } catch (err: any) {
       console.error(err);
-      // Tratamento de erros amigável em português
       if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
         setError("E-mail ou senha incorretos.");
       } else if (err.code === "auth/email-already-in-use") {

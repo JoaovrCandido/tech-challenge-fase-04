@@ -1,8 +1,6 @@
 import { TransactionsListHomeProps } from "@/types";
 
-import { getMonthName } from "@/utils/getMonthName";
-import { AdjustTypesNames } from "@/utils/adjustTypesName";
-import { formatDate, formatCurrency } from "@/utils/formatters";
+import { formatDate, formatCurrency, adjustTypesNames,getMonthName } from "@/utils/formatters";
 
 import Link from "next/link";
 
@@ -26,7 +24,7 @@ const TransactionsListHome = ({ transaction, title }: TransactionsListHomeProps)
             </div>
             <div className={style.transactionInfo}>
               <p className={style.transactionType}>
-                {AdjustTypesNames(transaction.type)}
+                {adjustTypesNames(transaction.type)}
               </p>
               <p className={style.transactionDate}>
                 {formatDate(transaction.date)}
@@ -37,7 +35,6 @@ const TransactionsListHome = ({ transaction, title }: TransactionsListHomeProps)
                 <p className={style.transactionDesc}>
                   {transaction.description || ""}
                 </p>
-                {/* Renderização condicional do link de download */}
                 {transaction.receipt && (
                   <a 
                     href={transaction.receipt} 

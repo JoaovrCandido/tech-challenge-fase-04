@@ -10,7 +10,6 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { MenuItem } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 
-// -> IMPORTAÇÃO DA CLEAN ARCHITECTURE (Repositório)
 import { transactionsRepository } from "@/infrastructure/database/FirebaseTransactionsRepository";
 
 import style from "./Menu.module.css";
@@ -31,10 +30,9 @@ export default function Menu() {
 
   const closeMenu = () => setOpen(false);
 
-  // Logout seguro: Desloga, limpa o cache da memória e redireciona
  const handleLogout = async () => {
     try {
-      await authService.logout(); // <-- Sem menção ao Firebase
+      await authService.logout();
       queryClient.clear(); 
       router.push("/login");
       closeMenu();
@@ -43,7 +41,6 @@ export default function Menu() {
     }
   };
 
-  // Prefetch Inteligente usando o Repositório novo
   const handlePrefetch = (path: string) => {
     if (user?.uid && (path === "/" || path === "/transacoes")) {
       queryClient.prefetchQuery({
@@ -78,7 +75,6 @@ export default function Menu() {
           );
         })}
 
-        {/* Botão de Sair com cor de alerta */}
         <li 
           className={style.menuItem} 
           onClick={handleLogout} 

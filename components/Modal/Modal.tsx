@@ -13,7 +13,6 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
         <button className={style.closeButton} onClick={onClose}>
           &times;
         </button>
-        {/* O Suspense segura a renderização até o Lazy Loading terminar */}
         <Suspense fallback={<div className={style.fallBack}>Carregando formulário...</div>}>
           {children}
         </Suspense>

@@ -1,5 +1,3 @@
-// core/domain/services/IAuthService.ts
-
 export interface UserData {
   uid: string;
   email: string | null;

@@ -4,8 +4,8 @@
 
 .layout {
   display: grid;
-  grid-template-columns: repeat(12, 1fr); /* 12 colunas oferece mais flexibilidade */
-  gap: 32px; /* Respiro maior entre as colunas */
+  grid-template-columns: repeat(12, 1fr);
+  gap: 32px;
   align-items: start;
 }
 

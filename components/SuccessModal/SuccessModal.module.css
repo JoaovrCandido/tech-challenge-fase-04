@@ -18,7 +18,7 @@
   max-width: 400px;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--color-border);
-  border-top: 4px solid var(--color-success); /* Detalhe visual de Sucesso */
+  border-top: 4px solid var(--color-success);
   position: relative;
   text-align: center;
   animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);

@@ -1,6 +1,5 @@
 import { Transaction } from "../entities/Transaction";
 
-// DTO (Data Transfer Object) para criação/edição
 export interface TransactionInput {
   type: "deposito" | "transferencia";
   amount: number;

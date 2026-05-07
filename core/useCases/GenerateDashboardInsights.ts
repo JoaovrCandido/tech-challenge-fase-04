@@ -1,8 +1,5 @@
-// core/useCases/GenerateDashboardInsights.ts
-
 import { Transaction } from "../domain/entities/Transaction";
 
-// Mantemos as cores aqui, ou poderíamos injetar via parâmetro
 const COLORS = {
   income: "#22c55e",
   outcome: "#ef4444",

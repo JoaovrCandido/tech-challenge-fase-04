@@ -5,16 +5,13 @@ import Image from "next/image";
 
 import { TransactionsListProps } from "@/types";
 
-import { formatDate, formatCurrency } from "@/utils/formatters";
-import { getMonthName } from "@/utils/getMonthName";
-import { AdjustTypesNames } from "@/utils/adjustTypesName";
+import { formatDate, formatCurrency, adjustTypesNames, getMonthName } from "@/utils/formatters";
 
 import editImage from "@/public/edit.png";
 import deleteImage from "@/public/delete-icon.png";
 
 import style from "./TransactionsList.module.css";
 
-// Estendemos a sua tipagem original para aceitar as novas funções de scroll infinito
 interface ExtendedProps extends TransactionsListProps {
   onLoadMore?: () => void;
   hasMore?: boolean;
@@ -28,13 +25,11 @@ const TransactionsList = ({
   onLoadMore,
   hasMore,
 }: ExtendedProps) => {
-  // Referência para o elemento "espião" no final da lista
   const observerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        // Se o elemento "espião" aparecer na tela e houver mais itens, carrega mais
         if (entries[0].isIntersecting && hasMore && onLoadMore) {
           onLoadMore();
         }
@@ -101,7 +96,7 @@ const TransactionsList = ({
             
             <div className={style.transactionInfo}>
               <p className={style.transactionType}>
-                {AdjustTypesNames(transaction.type)}
+                {adjustTypesNames(transaction.type)}
               </p>
               <p className={style.transactionDate}>
                 {formatDate(transaction.date)}
@@ -113,7 +108,6 @@ const TransactionsList = ({
                 <p className={style.transactionDesc}>
                   {transaction.description || ""}
                 </p>
-                {/* Renderização condicional do link de download */}
                 {transaction.receipt && (
                   <a 
                     href={transaction.receipt} 
@@ -132,7 +126,6 @@ const TransactionsList = ({
         );
       })}
 
-      {/* O nosso elemento "espião". Quando ele entra na tela, o observer detecta. */}
       {hasMore && (
         <div ref={observerRef} className={style.loadingIndicator}>
           Carregando mais transações...

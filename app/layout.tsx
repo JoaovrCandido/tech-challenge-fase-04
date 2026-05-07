@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google'
 import { AccessibilityProvider } from "@/contexts/AccessibilityProvider";
 import QueryProvider from "@/contexts/QueryProvider";
 import { FeedbackProvider } from "@/contexts/FeedbackContext";
-import { AuthProvider } from "@/contexts/AuthContext"; // <-- Novo Import
+import { AuthProvider } from "@/contexts/AuthContext";
 import { HeaderContainer } from "@/components/HeaderContainer/HeaderContainer";
 
 import "../styles/globals.css";
@@ -25,7 +25,6 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={inter.className}>
         <QueryProvider>
-          {/* Adicionando o Provider de Autenticação */}
           <AuthProvider>
             <AccessibilityProvider>
               <FeedbackProvider>

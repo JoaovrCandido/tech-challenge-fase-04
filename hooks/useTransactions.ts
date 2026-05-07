@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 
-// ---> IMPORTANDO DA NOSSA NOVA ARQUITETURA LIMPA <---
 import { transactionsRepository } from "@/infrastructure/database/FirebaseTransactionsRepository";
 import { Transaction } from "@/core/domain/entities/Transaction";
 import { TransactionInput } from "@/core/domain/repositories/ITransactionsRepository";
@@ -11,7 +10,6 @@ export function useGetTransactions() {
 
   return useQuery({
     queryKey: ["transactions", user?.uid],
-    // Delega a busca para o Repositório de Infraestrutura
     queryFn: () => transactionsRepository.getTransactions(user!.uid),
     enabled: !!user?.uid, 
     refetchInterval: 15000, 
@@ -23,7 +21,6 @@ export function useCreateTransaction() {
   const { user } = useAuth();
   
   return useMutation({
-    // Delega a criação para o Repositório
     mutationFn: (data: TransactionInput) => transactionsRepository.createTransaction(data, user!.uid),
     
     onMutate: async (newTxData) => {
@@ -66,7 +63,6 @@ export function useUpdateTransaction() {
   const { user } = useAuth();
   
   return useMutation({
-    // Delega a atualização para o Repositório
     mutationFn: ({ id, data }: { id: string | number; data: Partial<TransactionInput> }) => 
       transactionsRepository.updateTransaction(id, data),
     
@@ -114,7 +110,6 @@ export function useDeleteTransaction() {
   const { user } = useAuth();
   
   return useMutation({
-    // Delega a exclusão para o Repositório
     mutationFn: (id: string | number) => transactionsRepository.deleteTransaction(id),
     
     onMutate: async (deletedId) => {

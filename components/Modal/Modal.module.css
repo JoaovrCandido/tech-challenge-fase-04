@@ -4,13 +4,13 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 23, 42, 0.6); /* Slate com transparência */
-  backdrop-filter: blur(4px); /* Efeito de vidro fosco */
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  padding: 20px; /* Evita que o modal encoste nas bordas no celular */
+  padding: 20px;
 }
 
 .content {

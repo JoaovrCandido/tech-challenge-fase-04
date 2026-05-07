@@ -1,6 +1,6 @@
 "use client";
 
-import { TransactionType } from "@/types";
+import { TransactionType } from "@/core/domain/entities/Transaction";
 import { NewTransactionProps } from "@/types";
 
 import style from "./NewTransaction.module.css";
@@ -19,9 +19,7 @@ export default function NewTransaction({
   disabled = false,
 }: NewTransactionProps) {
   
-  // MÁSCARA MONETÁRIA BRASILEIRA
   const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Remove tudo que não for número (impede letras e símbolos)
     let rawValue = e.target.value.replace(/\D/g, "");
 
     if (!rawValue) {
@@ -29,10 +27,8 @@ export default function NewTransaction({
       return;
     }
 
-    // Converte para centavos matematicamente
     const numericValue = parseInt(rawValue, 10) / 100;
 
-    // Formata com R$ e separadores de milhar
     const formattedValue = numericValue.toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",
@@ -41,19 +37,16 @@ export default function NewTransaction({
     onValueChange(formattedValue);
   };
 
-  // VALIDAÇÕES AVANÇADAS DO ARQUIVO
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // 1. Validação de Tamanho (Máximo 5MB)
       const maxSizeBytes = 5 * 1024 * 1024;
       if (file.size > maxSizeBytes) {
         alert("O arquivo é muito grande. O tamanho máximo permitido é 5MB.");
-        e.target.value = ""; // Limpa o input
+        e.target.value = "";
         return;
       }
 
-      // 2. Validação de Tipo
       const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
       if (!allowedTypes.includes(file.type)) {
         alert("Formato inválido. Envie apenas imagens (JPG/PNG) ou PDF.");
@@ -99,7 +92,7 @@ export default function NewTransaction({
         type="text"
         placeholder="Descrição (opcional)"
         value={description}
-        maxLength={100} // Limite de caracteres
+        maxLength={100}
         onChange={(e) => onDescriptionChange(e.target.value)}
         disabled={disabled}
       />

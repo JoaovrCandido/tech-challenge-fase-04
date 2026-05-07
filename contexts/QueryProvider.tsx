@@ -8,8 +8,8 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 1000 * 60 * 5, // Cache fresco por 5 minutos
-        refetchOnWindowFocus: true, // Mantém a tela atualizada se o usuário mudar de aba
+        staleTime: 1000 * 60 * 5,
+        refetchOnWindowFocus: true,
       },
     },
   }));

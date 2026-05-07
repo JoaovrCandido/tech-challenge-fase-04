@@ -3,13 +3,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-// -> IMPORTS DA CLEAN ARCHITECTURE (Entidades e Casos de Uso)
 import { Transaction, TransactionType } from "@/core/domain/entities/Transaction";
 import { TransactionInput } from "@/core/domain/repositories/ITransactionsRepository";
 import { sortTransactionsByDate } from "@/core/useCases/SortTransactions";
-import { filterTransactions } from "@/core/useCases/FilterTransactions"; // <-- NOVO CASO DE USO
+import { filterTransactions } from "@/core/useCases/FilterTransactions";
 
-// -> NOSSOS HOOKS
 import { useGetTransactions, useUpdateTransaction, useDeleteTransaction } from "@/hooks/useTransactions";
 
 import Loading from "../Loading/Loading";
@@ -30,7 +28,6 @@ export default function TransactionsContainer() {
   const { mutateAsync: updateTx, isPending: isUpdating } = useUpdateTransaction();
   const { mutateAsync: deleteTx, isPending: isDeleting } = useDeleteTransaction();
 
-  // Estados dos modais
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -42,16 +39,13 @@ export default function TransactionsContainer() {
   const [modalMessage, setModalMessage] = useState("");
   const [modalTitle, setModalTitle] = useState("Sucesso!");
 
-  // ---> ESTADOS DO FILTRO AVANÇADO <---
   const [filterType, setFilterType] = useState<TransactionType | "todos">("todos");
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // ---> ESTADO DO SCROLL INFINITO <---
   const [visibleCount, setVisibleCount] = useState(10);
 
-  // Reseta a quantidade visível sempre que o usuário mexer em algum filtro
   useEffect(() => {
     setVisibleCount(10);
   }, [filterType, searchQuery, startDate, endDate]);
@@ -124,11 +118,9 @@ export default function TransactionsContainer() {
     }
   };
 
-  // ---> APLICANDO OS CASOS DE USO (Clean Architecture) <---
   const filteredAndSortedTransactions = useMemo(() => {
     if (!transactions) return [];
 
-    // 1. Aplica o Caso de Uso de Filtro
     const filtered = filterTransactions(transactions, {
       type: filterType,
       searchQuery,
@@ -136,11 +128,9 @@ export default function TransactionsContainer() {
       endDate
     });
 
-    // 2. Aplica o Caso de Uso de Ordenação
     return sortTransactionsByDate(filtered);
   }, [transactions, filterType, searchQuery, startDate, endDate]);
 
-  // Lógica de Slicing (Paginação/Scroll Infinito)
   const visibleTransactions = filteredAndSortedTransactions.slice(0, visibleCount);
   const hasMore = visibleCount < filteredAndSortedTransactions.length;
 
@@ -164,7 +154,6 @@ export default function TransactionsContainer() {
       ) : (
         <div className={style.container}>
           
-          {/* UI DO FILTRO AVANÇADO RESTAURADA */}
           <div className={style.filterContainer}>
             <input 
               type="text" 
