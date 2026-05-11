@@ -1,103 +1,75 @@
-# 🧩 Projeto Next.js com TypeScript e Storybook
+# ByteBank - SaaS Financeiro (Tech Challenge Fase 4)
 
-Este projeto é uma aplicação financeira, o usuário pode registrar novas transações, editar informações existentes e excluir lançamentos quando necessário.
+Este projeto evoluiu de uma aplicação financeira estática para uma plataforma **SaaS completa**, focada em escalabilidade, segurança e experiência do usuário (UX). A aplicação permite o gerenciamento completo de transações financeiras com insights em tempo real e um dashboard personalizado.
 
-Além das funcionalidades principais, o projeto também inclui recursos de acessibilidade para melhorar a experiência do usuário, como alternância entre tema claro e escuro e a possibilidade de ajustar o tamanho da fonte, garantindo maior conforto visual e acessibilidade para diferentes perfis de usuários.
+## 🚀 Funcionalidades Principais
 
-O projeto foi criado com [Next.js](https://nextjs.org/) utilizando **TypeScript** e **ESLint** para garantir qualidade de código.
-Também inclui **Storybook** para documentação e visualização de componentes.
+* **Dashboard Analítico:** Gráficos interativos (Recharts) que mostram a evolução mensal e o resumo de entradas/saídas.
+* **Gestão de Transações:** CRUD completo (Criação, Leitura, Atualização e Exclusão) com atualizações otimistas (Optimistic UI) para uma interface extremamente rápida.
+* **Filtros Avançados:** Busca por descrição, tipo de transação e período de datas.
+* **Personalização de Widgets:** O usuário pode configurar quais indicadores e metas de economia deseja visualizar no painel.
+* **Acessibilidade e UX:** Suporte a Modo Escuro (Dark Mode) e ajuste de tamanho de fonte, com persistência automática de preferências no navegador.
+* **Anexos de Comprovante:** Suporte ao upload de comprovantes para cada transação.
+
+## 🏗️ Arquitetura Modular (Clean Architecture)
+
+O projeto foi totalmente refatorado seguindo os princípios da **Clean Architecture**, separando as responsabilidades em camadas isoladas para facilitar a manutenção e testes:
+
+1. **Core (Domínio):** Contém as entidades de negócio (`Transaction`) e os Casos de Uso (`Use Cases`) puramente em TypeScript. Esta camada não conhece frameworks externos.
+2. **Infrastructure (Infraestrutura):** Implementa a comunicação com o mundo externo. Aqui residem os repositórios do **Firebase Firestore**, o serviço de **Autenticação** e o serviço de **Criptografia**.
+3. **Presentation (Apresentação):** Camada visual construída com **Next.js 15**, **React Query** (gerenciamento de cache) e **CSS Modules**. Os componentes são "burros" e delegam toda a lógica para os Casos de Uso e Hooks.
+
+## 🔒 Segurança no Desenvolvimento
+
+Seguindo padrões rigorosos de segurança financeira:
+
+* **Autenticação Segura:** Implementada via **Firebase Auth**, utilizando tokens JWT e proteção nativa contra força bruta.
+* **Criptografia AES (Client-Side Encryption):** Dados sensíveis como descrição de transação e anexos são criptografados no navegador utilizando o algoritmo **AES-256 (crypto-js)** antes de serem enviados para o banco de dados. Nem mesmo o provedor de nuvem consegue ler os dados em texto puro.
+* **Blindagem de Variáveis:** Chaves de segurança e configurações de infraestrutura são gerenciadas via variáveis de ambiente (`.env.local`).
+
+## 🛠️ Tecnologias Utilizadas
+
+* **Frontend:** Next.js 15, TypeScript, React Query.
+* **Backend & DB:** Firebase (Firestore, Authentication).
+* **Gráficos:** Recharts.
+* **Criptografia:** Crypto-js.
+* **Testes:** Vitest e MSW (para simulação de ambientes).
 
 ---
 
-## 🚀 Requisitos
+## 🏃 Como rodar o projeto
 
-Antes de começar, verifique se você tem instalado:
+### 1. Pré-requisitos
 
-* [Node.js](https://nodejs.org/) (versão **16** ou superior recomendada)
-* [npm](https://www.npmjs.com/) ou [yarn](https://yarnpkg.com/)
+* Node.js (versão 18 ou superior)
+* Conta no Firebase (para configurar seu próprio ambiente, se desejar)
 
----
-
-## 📦 Instalação
-
-Clone o repositório e instale as dependências:
+### 2. Clonar e Instalar
 
 ```bash
-# Clonar o repositório
-git clone https://github.com/JoaovrCandido/tech-challenge-fase-01.git
-
-# Entrar na pasta do projeto
-cd tech-challenge-fase-01
-
-# Instalar dependências
+git clone [link-do-seu-repo]
+cd tech-challenge-fase-04
 npm install
-# ou
-yarn
+
 ```
 
----
+### 3. Configurar Variáveis de Ambiente
 
-## ▶️ Rodando o projeto localmente
+Crie um arquivo na raiz do projeto chamado **`.env.local`** e adicione a chave secreta da criptografia:
 
-Para iniciar o servidor de desenvolvimento do Next.js:
+```env
+NEXT_PUBLIC_CRYPTO_SECRET="S3cr3t_K3y_P4r4_0_P41n3l_F1n4nc31r0"
+# Adicione aqui também as chaves do seu projeto Firebase
+
+```
+
+### 4. Executar
 
 ```bash
 npm run dev
-# ou
-yarn dev
-```
-
-O projeto estará disponível em:
-👉 **[http://localhost:3000](http://localhost:3000)**
-
----
-
-## 📖 Storybook
-
-Este projeto utiliza **Storybook** para visualizar e documentar os componentes.
-
-### Rodar o Storybook
-
-```bash
-npm run storybook
-# ou
-yarn storybook
-```
-
-Após o carregamento, o Storybook estará disponível em:
-👉 **[http://localhost:6006](http://localhost:6006)**
----
-
-## 📁 Estrutura básica do projeto
 
 ```
-├── .storybook
-├── app/
-│   ├── api/
-│   ├── transacoes/
-│   ├──     ├── layout.tsx
-│   ├──     └── page.tsx
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── ...
-├── components
-├── hooks
-├── lib
-├── public
-├── styles
-├── types
-└── utils
-```
+
+A aplicação estará disponível em `http://localhost:3000`.
 
 ---
-
-## 🧠 Tecnologias principais
-
-* [Next.js](https://nextjs.org/)
-* [React](https://react.dev/)
-* [TypeScript](https://www.typescriptlang.org/)
-* [ESLint](https://eslint.org/)
-* [Storybook](https://storybook.js.org/)
-
----
-
