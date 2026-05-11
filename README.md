@@ -59,7 +59,6 @@ Crie um arquivo na raiz do projeto chamado **`.env.local`** e adicione a chave s
 
 ```env
 NEXT_PUBLIC_CRYPTO_SECRET="S3cr3t_K3y_P4r4_0_P41n3l_F1n4nc31r0"
-# Adicione aqui também as chaves do seu projeto Firebase
 
 ```
 
