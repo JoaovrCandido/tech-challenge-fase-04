@@ -11,13 +11,20 @@ Este projeto evoluiu de uma aplicação financeira estática para uma plataforma
 * **Acessibilidade e UX:** Suporte a Modo Escuro (Dark Mode) e ajuste de tamanho de fonte, com persistência automática de preferências no navegador.
 * **Anexos de Comprovante:** Suporte ao upload de comprovantes para cada transação.
 
-## 🏗️ Arquitetura Modular (Clean Architecture)
+## 🏗️ Padrões de Arquitetura
 
-O projeto foi totalmente refatorado seguindo os princípios da **Clean Architecture**, separando as responsabilidades em camadas isoladas para facilitar a manutenção e testes:
+Para garantir que o código seja escalável, testável e de fácil manutenção, o projeto foi construído aplicando dois conceitos fundamentais de engenharia de software:
 
-1. **Core (Domínio):** Contém as entidades de negócio (`Transaction`) e os Casos de Uso (`Use Cases`) puramente em TypeScript. Esta camada não conhece frameworks externos.
-2. **Infrastructure (Infraestrutura):** Implementa a comunicação com o mundo externo. Aqui residem os repositórios do **Firebase Firestore**, o serviço de **Autenticação** e o serviço de **Criptografia**.
-3. **Presentation (Apresentação):** Camada visual construída com **Next.js 15**, **React Query** (gerenciamento de cache) e **CSS Modules**. Os componentes são "burros" e delegam toda a lógica para os Casos de Uso e Hooks.
+### 1. Clean Architecture (Arquitetura Limpa)
+As responsabilidades do sistema foram separadas em camadas estritas, garantindo alto desacoplamento (a regra de dependência aponta sempre para o centro):
+* **Core (Domínio e Casos de Uso):** Contém as entidades de negócio (`Transaction`) e as regras da aplicação (`CalculateBalance`, `SortTransactions`, `FilterTransactions`, `GenerateDashboardInsights`). Esta camada é puramente escrita em TypeScript e não possui conhecimento sobre o React ou o banco de dados.
+* **Infrastructure (Infraestrutura):** Isola a comunicação com o mundo externo. Aqui residem as integrações do **Firebase Firestore**, o serviço de **Autenticação** e a implementação da **Criptografia**.
+* **Presentation (Apresentação):** A interface visual construída com **Next.js**, **React Query** (gerenciamento assíncrono e cache) e **CSS Modules**. Os componentes visuais são "burros", apenas orquestram as interações e delegam a lógica pesada para a camada Core.
+
+### 2. Arquitetura Modular
+O sistema foi desenvolvido em blocos independentes (módulos). 
+* **Componentização Avançada:** Funcionalidades como o `DashboardContainer` e o `TransactionsContainer` operam de forma autônoma. O painel de gráficos pode ser removido ou movido para outra tela sem quebrar a lógica de transações.
+* **Desacoplamento de Serviços:** A autenticação e o banco de dados são injetados como contratos (Interfaces). Isso significa que substituir o Firebase por um backend REST em Node.js exigiria apenas a criação de um novo arquivo na camada de Infraestrutura, sem alterar uma única linha de código dos componentes visuais do React.
 
 ## 🔒 Segurança no Desenvolvimento
 
